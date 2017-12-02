@@ -110,18 +110,19 @@
 	}
 
 	/** MySQL Connection **/
+	
+	static public String strConResult = null;
 
 	static public int connect(String strSQL, final String strDB, final String strUser, final String strPwd) {
+
+		Connection conn = null;
 		try {
 			//load mysql Driver
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			//connect database
-			Connection conn = DriverManager.getConnection("jdbc:mysql://52.68.108.37:3306/" + strDB + "?user=" + strUser
+			conn = DriverManager.getConnection("jdbc:mysql://52.68.108.37:3306/" + strDB + "?user=" + strUser
 					+ "&password=" + strPwd + "&useUnicode=true&characterEncoding=UTF-8");
-			//create statement
-			Statement stat = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-
-			ResultSet rs = stat.executeQuery(strSQL);
+		
 			
 		} catch (SQLException se) {
 			se.printStackTrace();
@@ -132,6 +133,7 @@
 			Logs.showTrace(e.toString());
 			return ERR_EXCEPTION;
 		}
+		strConResult = conn.toString();
 		return ERR_SUCCESS;
 	}
 
@@ -141,14 +143,23 @@
 		int nCount = 0;
 		String strSQL = "select * from device where device_id = '" + strDeviceId + "';";
 
-	
+		int nConResult = connect(strSQL, Common.DB, Common.DB_USER, Common.DB_PASS);
+		
+		if (nConResult > 0){
+			Connection conn = strConResult;
+		//create statement
+		Statement stat = conn.createStatement();
 
-			connect(strSQL, Common.DB, Common.DB_USER, Common.DB_PASS);
+		ResultSet rs = stat.executeQuery(strSQL);
+
+			
 			
 			
 			
 			
 	
+		
+		}
 		return nCount;
 	}
 	
