@@ -75,8 +75,8 @@
 		public String device_id;
 		public String device_os;
 		public String mac_address;
-		public String create_date;
-		public String update_date;
+		public String create_time;
+		public String update_time;
 	}
 
 	public static class RoutineData {
@@ -87,15 +87,15 @@
 		public String start_date;
 		public int repeat;
 		public int meta_id;
-		public String create_date;
-		public String update_date;
+		public String create_time;
+		public String update_time;
 	}
 
 	public static class RepeatData {
 		public int routine_seq;
 		public int routine_id;
 		public int weekday;
-		public String create_date;
+		public String create_time;
 	}
 
 	public static class StoryData {
@@ -105,35 +105,60 @@
 		public String category;
 		public String language;
 		public int type;
-		public String create_date;
-		public String update_date;
+		public String create_time;
+		public String update_time;
 	}
 
 	/** MySQL Connection **/
-	
-	static public String strConResult = null;
 
-	static public int connect(String strSQL, final String strDB, final String strUser, final String strPwd) {
-
+	static public Connection connect(String strSQL, final String strDB, final String strUser, final String strPwd) {
 		Connection conn = null;
+
 		try {
-			//load mysql Driver
+			//load mysql Driver 
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			//connect database
 			conn = DriverManager.getConnection("jdbc:mysql://52.68.108.37:3306/" + strDB + "?user=" + strUser
 					+ "&password=" + strPwd + "&useUnicode=true&characterEncoding=UTF-8");
-		
+
+		} catch (SQLException se) {
+			se.printStackTrace();
+			Logs.showTrace("MySQL Exception: " + se.toString());
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+		}
+		return conn;
+	}
+
+	static public int closeConn() {
+		Connection conn = null;
+
+		try {
 			
+			
+			
+
 		} catch (SQLException se) {
 			se.printStackTrace();
 			Logs.showTrace("MySQL Exception: " + se.toString());
 			return ERR_EXCEPTION;
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			Logs.showTrace(e.toString());
 			return ERR_EXCEPTION;
+
+		} finally {
+			try {
+				if (conn != null)
+					conn.close();
+			} catch (SQLException se) {
+				se.printStackTrace();
+				return ERR_EXCEPTION;
+			}
 		}
-		strConResult = conn.toString();
 		return ERR_SUCCESS;
 	}
 
@@ -141,39 +166,31 @@
 
 	public int queryDevice(final String strDeviceId, DeviceData deviData) {
 		int nCount = 0;
+		Connection conn = null;
 		String strSQL = "select * from device where device_id = '" + strDeviceId + "';";
 
-		int nConResult = connect(strSQL, Common.DB, Common.DB_USER, Common.DB_PASS);
-		
-		if (nConResult > 0){
-			Connection conn = strConResult;
-		//create statement
-		Statement stat = conn.createStatement();
+		try {
 
-		ResultSet rs = stat.executeQuery(strSQL);
+			conn = connect(strSQL, Common.DB, Common.DB_USER, Common.DB_PASS);
 
-			
-			
-			
-			
-			
-	
-		
+			if (null != conn) {
+				Statement stat = conn.createStatement();
+				ResultSet rs = stat.executeQuery(strSQL);
+
+				while (rs.next()) {
+					++nCount;
+					deviData.device_id = rs.getString("device_id");
+					deviData.device_os = rs.getString("device_os");
+					deviData.mac_address = rs.getString("mac_address");
+					deviData.create_time = rs.getString("create_time");
+					deviData.update_time = rs.getString("update_time");
+				}
+				rs.close();
+				stat.close();
+			}
+
+		} catch (Exception e) {
+			Logs.showTrace(e.toString());
 		}
 		return nCount;
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	%>
+	}%>
