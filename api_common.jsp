@@ -4,11 +4,13 @@
 <%@ page import="java.util.ArrayList"%>
 <%@ page import="java.util.Arrays"%>
 <%@ page import="more.Logs"%>
+<%@ page import="more.StringUtility"%>
 
 <%!public final static int ERR_SUCCESS = 1;
 	public final static int ERR_FAIL = 0;
 	public final static int ERR_EXCEPTION = -1;
 	public final static int ERR_INVALID_PARAMETER = -2;
+	public final static int ERR_CONFLICT = -3;
 
 	public class Common {
 
@@ -60,17 +62,18 @@
 		final public static String UPDATE_TIME = "update_time";
 	}
 
-	final public static ArrayList<String> listDeviceField = new ArrayList<>(Arrays.asList(Common.DEVICE_ID,
-			Common.DEVICE_OS, Common.MAC_ADDRESS, Common.CREATE_TIME, Common.UPDATE_TIME));
-
-	final public static ArrayList<String> listRoutineField = new ArrayList<>(
-			Arrays.asList(Common.ROUTINE_ID, Common.DEVICE_ID, Common.ROUTINE_TYPE, Common.TITLE, Common.START_TIME,
-					Common.REPEAT, Common.META_ID, Common.CREATE_TIME, Common.UPDATE_TIME));
-
-	final public static ArrayList<String> listStoryField = new ArrayList<>(
-			Arrays.asList(Common.STORY_ID, Common.STORY_URL, Common.STORY_NAME, Common.CATEGORY, Common.LANGUAGE,
-					Common.TYPE, Common.CREATE_TIME, Common.UPDATE_TIME));
-
+	/*
+		final public static ArrayList<String> listDeviceField = new ArrayList<>(Arrays.asList(Common.DEVICE_ID,
+				Common.DEVICE_OS, Common.MAC_ADDRESS, Common.CREATE_TIME));
+	
+		final public static ArrayList<String> listRoutineField = new ArrayList<>(
+				Arrays.asList(Common.ROUTINE_ID, Common.DEVICE_ID, Common.ROUTINE_TYPE, Common.TITLE, Common.START_TIME,
+						Common.REPEAT, Common.META_ID, Common.CREATE_TIME));
+	
+		final public static ArrayList<String> listStoryField = new ArrayList<>(
+				Arrays.asList(Common.STORY_ID, Common.STORY_URL, Common.STORY_NAME, Common.CATEGORY, Common.LANGUAGE,
+						Common.TYPE, Common.CREATE_TIME));
+	*/
 	public static class DeviceData {
 		public String device_id;
 		public String device_os;
@@ -111,7 +114,7 @@
 
 	/** MySQL Connection **/
 
-	static public Connection connect(String strSQL, final String strDB, final String strUser, final String strPwd) {
+	static public Connection connect(final String strDB, final String strUser, final String strPwd) {
 		Connection conn = null;
 
 		try {
@@ -132,13 +135,10 @@
 		return conn;
 	}
 
-	static public int closeConn() {
-		Connection conn = null;
+	static public int closeConn(Connection conn) {
 
 		try {
-			
-			
-			
+			conn.close();
 
 		} catch (SQLException se) {
 			se.printStackTrace();
@@ -167,11 +167,15 @@
 	public int queryDevice(final String strDeviceId, DeviceData deviData) {
 		int nCount = 0;
 		Connection conn = null;
-		String strSQL = "select * from device where device_id = '" + strDeviceId + "';";
+		String strSQL = "select * from device_list where device_id = '" + strDeviceId + "';";
+
+		if (!StringUtility.isValid(strDeviceId)) {
+			return ERR_INVALID_PARAMETER;
+		}
 
 		try {
 
-			conn = connect(strSQL, Common.DB, Common.DB_USER, Common.DB_PASS);
+			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
 				Statement stat = conn.createStatement();
@@ -187,10 +191,50 @@
 				}
 				rs.close();
 				stat.close();
+				closeConn(conn);
 			}
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
 		}
 		return nCount;
+	}
+
+	public int insertDevice(final String strDeviceId, final String strDeviceOs, final String strMacAddress) {
+		int nCount = 0;
+		Connection conn = null;
+		PreparedStatement pst = null;
+		String strSQL = "insert into device_list(device_id, device_os, mac_address) values (?,?,?)";
+
+		if (!StringUtility.isValid(strDeviceId)) {
+			return ERR_INVALID_PARAMETER;
+		}
+
+		try {
+			DeviceData deviData = new DeviceData();
+			nCount = queryDevice(strDeviceId, deviData);
+			if (0 < nCount)
+				return ERR_CONFLICT;
+
+			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+
+			if (null != conn) {
+				pst = conn.prepareStatement(strSQL);
+				int idx = 1;
+				pst.setString(idx++, strDeviceId);
+				pst.setString(idx++, strDeviceOs);
+				pst.setString(idx++, strMacAddress);
+				pst.executeUpdate();
+			}
+			pst.close();
+			closeConn(conn);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
+		}
+		return ERR_SUCCESS;
 	}%>

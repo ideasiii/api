@@ -7,9 +7,9 @@
 
 <%	
 	final String strDeviceId = request.getParameter("device_id");
+	final String strDeviceOs = request.getParameter("device_os");
+	final String strMacAddress = request.getParameter("mac_address");
 	boolean bSuccess = false; 
-	String strError = null;
-	String strMessage = null;
 	DeviceData deviData = new DeviceData();
 	
 	int nCount = queryDevice(strDeviceId, deviData);
@@ -28,21 +28,18 @@
 		
 		else {
 			
-		switch (nCount)
-		{
-		case 0:
-			strError = "ER0100";
-			strMessage = "device_id not found.";
-			break;
-		case -1:
-			strError = "ER0500";
-			strMessage = "Internal server error.";
-			break;
-		case -2:
-			strError = "ER0220";
-			strMessage = "Invalid device_id.";
-			break;
-		}
+			String strError = null;
+			String strMessage = null;
+		
+			if (0 == nCount) {
+				strError = "ER0100";
+				strMessage = "Invalid device_id.";
+			}
+			
+			if (0 > nCount) {
+				strError = "ER0500";
+				strMessage = "Internal server error.";
+			}
 			
 			JSONObject jobj = new JSONObject();
 			jobj.put("success", bSuccess);
