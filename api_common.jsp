@@ -237,4 +237,90 @@
 			return ERR_EXCEPTION;
 		}
 		return ERR_SUCCESS;
-	}%>
+	}
+	
+	/** Device Setting API **/ 
+
+	public int insertResetSetting(final String strDeviceId, final String strType, final int nAction) {
+		int nCount = 0;
+		Connection conn = null;
+		PreparedStatement pst = null;
+		String strSQL = "insert into device_setting(device_id, setting_type, action) values (?,?,?)";
+
+		if (strType != "reset" || 1 < nAction || 0 > nAction) {
+			return ERR_INVALID_PARAMETER;
+		}
+		try {
+	
+			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+
+			if (null != conn) {
+				pst = conn.prepareStatement(strSQL);
+				int idx = 1;
+				pst.setString(idx++, strDeviceId);
+				pst.setString(idx++, strType);
+				pst.setInt(idx++, nAction);
+				pst.executeUpdate();
+			}
+			pst.close();
+			closeConn(conn);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
+		}
+		return ERR_SUCCESS;
+	}
+	
+	public int updateResetSetting(final String strDeviceId, final String strType, final int nAction) {
+		int nCount = 0;
+		Connection conn = null;
+		PreparedStatement pst = null;
+		String strSQL = "update device_setting set action = ? where device_id =? and setting_type = ?";
+//
+		if (strType != "reset" || 1 < nAction || 0 > nAction) {
+			return ERR_INVALID_PARAMETER;
+		}
+		try {
+	
+			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+
+			if (null != conn) {
+				pst = conn.prepareStatement(strSQL);
+				int idx = 1;
+				pst.setString(idx++, strDeviceId);
+				pst.setString(idx++, strType);
+				pst.setInt(idx++, nAction);
+				pst.executeUpdate();
+			}
+			pst.close();
+			closeConn(conn);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
+		}
+		return ERR_SUCCESS;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+%>
