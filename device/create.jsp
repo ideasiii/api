@@ -6,21 +6,20 @@
 <%@include file="../api_common.jsp"%>
 
 <%	
-	final String strDeviceId = request.getParameter("device_id");
-	final String strDeviceOs = request.getParameter("device_os");
-	final String strMacAddress = request.getParameter("mac_address");
+	final String strDeviceId = "asdfghjk4yt5d3";//request.getParameter("device_id");
+	final String strDeviceOs = "Android 5.1.1";//request.getParameter("device_os");
+	final String strMacAddress = "68-dd-df-13-dd-aa";//request.getParameter("mac_address");
 	boolean bSuccess = false; 
-	DeviceData deviData = new DeviceData();
+	String strError = null;
+	String strMessage = null;
 	
-	int nCount = queryDevice(strDeviceId, deviData);
+	int nCount = insertDevice(strDeviceId, strDeviceOs, strMacAddress);
 	
 	if (0 < nCount) {
 		bSuccess = true;
 		
 		JSONObject jobj = new JSONObject();
 		jobj.put("success", bSuccess);
-		jobj.put("device_os", deviData.device_os);
-		jobj.put("mac_address", deviData.mac_address);
 		
 		Logs.showTrace("**********************nCount: " + nCount);
 		out.println(jobj.toString());
@@ -28,26 +27,29 @@
 		
 		else {
 			
-			String strError = null;
-			String strMessage = null;
-		
-			if (0 == nCount) {
-				strError = "ER0100";
-				strMessage = "Invalid device_id.";
-			}
-			
-			if (0 > nCount) {
+			switch (nCount)
+			{
+			case 0:
 				strError = "ER0500";
 				strMessage = "Internal server error.";
+				break;
+			case -1:
+				strError = "ER0500";
+				strMessage = "Internal server error.";
+				break;
+			case -2:
+				strError = "ER0220";
+				strMessage = "Invalid input.";
+				break;
 			}
-			
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-			jobj.put("error", strError);
-			jobj.put("message", strMessage);
-			
-			Logs.showTrace("********error*********nCount: " + nCount);
-			out.println(jobj.toString());
+				
+				JSONObject jobj = new JSONObject();
+				jobj.put("success", bSuccess);
+				jobj.put("error", strError);
+				jobj.put("message", strMessage);
+				
+				Logs.showTrace("********error*********nCount: " + nCount);
+				out.println(jobj.toString());
 		}
 %>
 
