@@ -82,6 +82,15 @@
 		public String update_time;
 	}
 
+	public static class DeviceSetData {
+		public int cmmd_id;
+		public String device_id;
+		public String setting_type;
+		public int action;
+		public String create_time;
+		public String update_time;
+	}
+	
 	public static class RoutineData {
 		public int routine_id;
 		public String device_id;
@@ -191,8 +200,8 @@
 				}
 				rs.close();
 				stat.close();
-				closeConn(conn);
 			}
+			closeConn(conn);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -240,14 +249,53 @@
 	}
 	
 	/** Device Setting API **/ 
+ /****    Low Power Mode    ****/	
 
-	public int insertResetSetting(final String strDeviceId, final String strType, final int nAction) {
+     public int queryBattery(final String strDeviceId, DeviceSetData deviSetData) {
+		int nCount = 0;
+		Connection conn = null;
+		String strSQL = "select * from device_setting where device_id = '" + strDeviceId + "' and setting_type = 'battery';";
+
+		if (!StringUtility.isValid(strDeviceId)) {
+			return ERR_INVALID_PARAMETER;
+		}
+		try {
+	
+			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+
+			if (null != conn) {
+				Statement stat = conn.createStatement();
+				ResultSet rs = stat.executeQuery(strSQL);
+			
+				while (rs.next()) {
+					++nCount;
+					deviSetData.cmmd_id = rs.getInt("cmmd_id");
+					deviSetData.device_id = rs.getString("device_id");
+					deviSetData.setting_type = rs.getString("setting_type");
+					deviSetData.action = rs.getInt("action");
+					deviSetData.create_time = rs.getString("create_time");
+					deviSetData.update_time = rs.getString("update_time");
+				}
+				rs.close();
+				stat.close();
+			}
+			closeConn(conn);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
+		}
+		return nCount;
+	}
+     
+	public int insertBattery(final String strDeviceId, final String strType, final int nAction) {
 		int nCount = 0;
 		Connection conn = null;
 		PreparedStatement pst = null;
 		String strSQL = "insert into device_setting(device_id, setting_type, action) values (?,?,?)";
 
-		if (strType != "reset" || 1 < nAction || 0 > nAction) {
+		if (strType != "battery" || 1 < nAction || 0 > nAction) {
 			return ERR_INVALID_PARAMETER;
 		}
 		try {
@@ -273,13 +321,13 @@
 		return ERR_SUCCESS;
 	}
 	
-	public int updateResetSetting(final String strDeviceId, final String strType, final int nAction) {
+	public int updateBattery(final String strDeviceId, final String strType, final int nAction) {
 		int nCount = 0;
 		Connection conn = null;
 		PreparedStatement pst = null;
 		String strSQL = "update device_setting set action = ? where device_id =? and setting_type = ?";
-//
-		if (strType != "reset" || 1 < nAction || 0 > nAction) {
+
+		if (strType != "battery" || 1 < nAction || 0 > nAction) {
 			return ERR_INVALID_PARAMETER;
 		}
 		try {
@@ -289,9 +337,9 @@
 			if (null != conn) {
 				pst = conn.prepareStatement(strSQL);
 				int idx = 1;
+				pst.setInt(idx++, nAction);
 				pst.setString(idx++, strDeviceId);
 				pst.setString(idx++, strType);
-				pst.setInt(idx++, nAction);
 				pst.executeUpdate();
 			}
 			pst.close();
@@ -305,7 +353,7 @@
 		return ERR_SUCCESS;
 	}
 	
-	
+	 /****    dfg    ****/
 	
 	
 	

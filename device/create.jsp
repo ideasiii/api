@@ -6,9 +6,9 @@
 <%@include file="../api_common.jsp"%>
 
 <%	
-	final String strDeviceId = "asdfghjk4yt5d3";//request.getParameter("device_id");
-	final String strDeviceOs = "Android 5.1.1";//request.getParameter("device_os");
-	final String strMacAddress = "68-dd-df-13-dd-aa";//request.getParameter("mac_address");
+	final String strDeviceId = request.getParameter("device_id");
+	final String strDeviceOs = request.getParameter("device_os");
+	final String strMacAddress = request.getParameter("mac_address");
 	boolean bSuccess = false; 
 	String strError = null;
 	String strMessage = null;
