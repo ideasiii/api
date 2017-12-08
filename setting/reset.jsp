@@ -10,101 +10,74 @@
 	boolean bSuccess = false;
 	String strError = null;
 	String strMessage = null;
-	DeviceSetData deviSetData = new DeviceSetData();
+	DeviceData deviData = new DeviceData();
 
-	int nCount = queryResetSetting(strDeviceId, deviSetData);
+	int nCount = queryDevice(strDeviceId, deviData);
 
 	if (0 < nCount) {
 		//setting exist
-		int nUpdate = 0;
-		int nAction = deviSetData.action;
+		int nDelete = 0;
 
-		if (0 == nAction) {
-			// update reset setting to cmmd
-			nUpdate = updateResetSetting(strDeviceId, "reset", 1);
+		nDelete = deleteSetting(strDeviceId);
+		if (0 < nDelete) {
+			bSuccess = true;
 
-			if (0 < nUpdate) {
-				bSuccess = true;
+			JSONObject jobj = new JSONObject();
+			jobj.put("success", bSuccess);
 
-				JSONObject jobj = new JSONObject();
-				jobj.put("success", bSuccess);
+			Logs.showTrace("**********************nDelete: " + nDelete);
+			out.println(jobj.toString());
+		} else {
 
-				Logs.showTrace("**********************nCount: " + nCount);
-				out.println(jobj.toString());
-			} else {
-
-				switch (nUpdate) {
-				case 0:
-					strError = "ER0500";
-					strMessage = "Internal server error.";
-					break;
-				case -1:
-					strError = "ER0500";
-					strMessage = "Internal server error.";
-					break;
-				case -2:
-					strError = "ER0220";
-					strMessage = "Invalid input.";
-					break;
-				}
-
-				JSONObject jobj = new JSONObject();
-				jobj.put("success", bSuccess);
-				jobj.put("error", strError);
-				jobj.put("message", strMessage);
-
-				Logs.showTrace("********error*********nCount: " + nCount);
-				out.println(jobj.toString());
+			switch (nDelete) {
+			case 0:
+				strError = "ER0500";
+				strMessage = "Internal server error.";
+				break;
+			case -1:
+				strError = "ER0500";
+				strMessage = "Internal server error.";
+				break;
+			case -2:
+				strError = "ER0220";
+				strMessage = "Invalid input.";
+				break;
 			}
+
+			JSONObject jobj = new JSONObject();
+			jobj.put("success", bSuccess);
+			jobj.put("error", strError);
+			jobj.put("message", strMessage);
+
+			Logs.showTrace("********error*********nDelete: " + nDelete);
+			out.println(jobj.toString());
 		}
 
-		if (1 == nAction) {
-			// update reset setting to acted
-			nUpdate = updateResetSetting(strDeviceId, "reset", 0);
-
-			if (0 < nUpdate) {
-				bSuccess = true;
-
-				JSONObject jobj = new JSONObject();
-				jobj.put("success", bSuccess);
-
-				Logs.showTrace("**********************nCount: " + nCount);
-				out.println(jobj.toString());
-			} else {
-
-				switch (nUpdate) {
-				case 0:
-					strError = "ER0500";
-					strMessage = "Internal server error.";
-					break;
-				case -1:
-					strError = "ER0500";
-					strMessage = "Internal server error.";
-					break;
-				case -2:
-					strError = "ER0220";
-					strMessage = "Invalid input.";
-					break;
-				}
-
-				JSONObject jobj = new JSONObject();
-				jobj.put("success", bSuccess);
-				jobj.put("error", strError);
-				jobj.put("message", strMessage);
-
-				Logs.showTrace("********error*********nCount: " + nCount);
-				out.println(jobj.toString());
-			}
-		}
-	}
-
-	else {
+	} else {
 		//setting not found
+		
+		switch (nCount) {
+			case 0:
+				strError = "ER0100";
+				strMessage = "device_id not found.";
+				break;
+			case -1:
+				strError = "ER0500";
+				strMessage = "Internal server error.";
+				break;
+			case -2:
+				strError = "ER0220";
+				strMessage = "Invalid input.";
+				break;
+			}
+			
+			JSONObject jobj = new JSONObject();
+			jobj.put("success", bSuccess);
+			jobj.put("error", strError);
+			jobj.put("message", strMessage);
 
-		
-		
-		
-		
+			Logs.showTrace("********error*********nCount: " + nCount);
+			out.println(jobj.toString());
 	}
 %>
 

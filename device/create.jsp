@@ -12,22 +12,44 @@
 	boolean bSuccess = false; 
 	String strError = null;
 	String strMessage = null;
+	DeviceData deviData = new DeviceData();
 	
-	int nCount = insertDevice(strDeviceId, strDeviceOs, strMacAddress);
+	
+	int nCount = queryDevice(strDeviceId, deviData);
 	
 	if (0 < nCount) {
+		//deviceID exist
+	
+		strError = "ER0240";
+		strMessage = "device_id conflict.";
+	
+		JSONObject jobj = new JSONObject();
+		jobj.put("success", bSuccess);
+		jobj.put("error", strError);
+		jobj.put("message", strMessage);
+		
+		Logs.showTrace("********error*********nCount: " + nCount);
+		out.println(jobj.toString());
+	
+		
+	} else {
+		//deviceID not found
+	
+	int nInsert = insertDevice(strDeviceId, strDeviceOs, strMacAddress);
+	
+	if (0 < nInsert) {
 		bSuccess = true;
 		
 		JSONObject jobj = new JSONObject();
 		jobj.put("success", bSuccess);
 		
-		Logs.showTrace("**********************nCount: " + nCount);
+		Logs.showTrace("**********************nInsert: " + nInsert);
 		out.println(jobj.toString());
 		}
 		
 		else {
 			
-			switch (nCount)
+			switch (nInsert)
 			{
 			case 0:
 				strError = "ER0500";
@@ -48,8 +70,10 @@
 				jobj.put("error", strError);
 				jobj.put("message", strMessage);
 				
-				Logs.showTrace("********error*********nCount: " + nCount);
+				Logs.showTrace("********error*********nInsert: " + nInsert);
 				out.println(jobj.toString());
 		}
+	
+	}
 %>
 

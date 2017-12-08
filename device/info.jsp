@@ -24,9 +24,8 @@
 		
 		Logs.showTrace("**********************nCount: " + nCount);
 		out.println(jobj.toString());
-		}
 		
-		else {
+		} else {
 			
 		switch (nCount)
 		{

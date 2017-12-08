@@ -249,12 +249,11 @@
 	}
 	
 	/** Device Setting API **/ 
- /****    Low Power Mode    ****/	
 
-     public int queryBattery(final String strDeviceId, DeviceSetData deviSetData) {
+     public int querySetting(final String strDeviceId, final String strType, DeviceSetData deviSetData) {
 		int nCount = 0;
 		Connection conn = null;
-		String strSQL = "select * from device_setting where device_id = '" + strDeviceId + "' and setting_type = 'battery';";
+		String strSQL = "select * from device_setting where device_id = '" + strDeviceId + "' and setting_type ='" + strType + "'";
 
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
@@ -289,6 +288,8 @@
 		return nCount;
 	}
      
+     /****    Low Power Mode    ****/	 
+	
 	public int insertBattery(final String strDeviceId, final String strType, final int nAction) {
 		int nCount = 0;
 		Connection conn = null;
@@ -296,6 +297,9 @@
 		String strSQL = "insert into device_setting(device_id, setting_type, action) values (?,?,?)";
 
 		if (strType != "battery" || 1 < nAction || 0 > nAction) {
+			return ERR_INVALID_PARAMETER;
+		}
+		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
 		}
 		try {
@@ -330,6 +334,9 @@
 		if (strType != "battery" || 1 < nAction || 0 > nAction) {
 			return ERR_INVALID_PARAMETER;
 		}
+		if (!StringUtility.isValid(strDeviceId)) {
+			return ERR_INVALID_PARAMETER;
+		}
 		try {
 	
 			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
@@ -353,20 +360,51 @@
 		return ERR_SUCCESS;
 	}
 	
-	 /****    dfg    ****/
+	 /****    reset    ****/
+	
+	public int deleteSetting(final String strDeviceId) {
+		int nCount = 0;
+		Connection conn = null;
+		PreparedStatement pst = null;
+		String strSQL = null;
+		
+		if (!StringUtility.isValid(strDeviceId)) {
+			return ERR_INVALID_PARAMETER;
+		}
+		try {
+			
+			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+
+			if (null != conn) {
+				
+				strSQL = "delete from device_setting where device_id = ?";
+				pst = conn.prepareStatement(strSQL);
+				int idx = 1;
+				pst.setString(idx++, strDeviceId);
+				pst.executeUpdate();
+				
+				strSQL = "delete from routine_setting where device_id = ?";
+				pst = conn.prepareStatement(strSQL);
+				idx = 1;
+				pst.setString(idx++, strDeviceId);
+				pst.executeUpdate();
+			}
+			pst.close();
+			closeConn(conn);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
+		}
+	return ERR_SUCCESS;
+	 }
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	 
+	 
+	 
+	 
 	
 	
 	

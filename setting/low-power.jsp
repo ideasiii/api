@@ -7,21 +7,25 @@
 
 <%
 	final String strDeviceId = request.getParameter("device_id");
-	int nAction = Integer.parseInt(request.getParameter("action"));
-
+	final String strType = "battery";
+	String strAction = request.getParameter("action");
+	int nAction = 0;
+	if(strAction != null && !strAction.isEmpty())
+		nAction = Integer.parseInt(strAction.trim());
+	
 	boolean bSuccess = false;
 	String strError = null;
 	String strMessage = null;
 	DeviceSetData deviSetData = new DeviceSetData();
 
-	int nCount = queryBattery(strDeviceId, deviSetData);
-
+	int nCount = querySetting(strDeviceId, strType, deviSetData);
+	
 	if (0 < nCount) {
 		//setting exist
 		int nUpdate = 0;
 
 		// update battery setting 
-		nUpdate = updateBattery(strDeviceId, "battery", nAction);
+		nUpdate = updateBattery(strDeviceId, strType, nAction);
 
 		if (0 < nUpdate) {
 			bSuccess = true;
@@ -62,7 +66,7 @@
 		int nInsert = 0;
 
 		//insert battery setting
-		nInsert = insertBattery(strDeviceId, "battery", nAction);
+		nInsert = insertBattery(strDeviceId, strType, nAction);
 
 		if (0 < nInsert) {
 			bSuccess = true;
@@ -94,7 +98,7 @@
 			jobj.put("error", strError);
 			jobj.put("message", strMessage);
 
-			Logs.showTrace("********error*********nInsert: " + nInsert);
+			Logs.showTrace("********error*********nInsert: " + nInsert + "***nAction: " + nAction + "id: " + strDeviceId);
 			out.println(jobj.toString());
 		}
 	}
