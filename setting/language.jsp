@@ -41,7 +41,7 @@
 			case 0:
 				strError = "ER0500";
 				strMessage = "Internal server error.";
-				break;
+				break;git
 			case -1:
 				strError = "ER0500";
 				strMessage = "Internal server error.";

@@ -248,7 +248,7 @@
 		return ERR_SUCCESS;
 	}
 	
-	/** Device Setting API **/ 
+	/** DEVICE SETTING API **/ 
 
      public int querySetting(final String strDeviceId, final String strType, DeviceSetData deviSetData) {
 		int nCount = 0;
@@ -472,7 +472,7 @@
 	return ERR_SUCCESS;
 	 }
 	
-	
+	/** ROUTINE SETTING API **/ 
 	 
 	 
 	 
