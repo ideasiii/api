@@ -9,6 +9,7 @@
 	final String strDeviceId = request.getParameter("device_id");
 	final String strDeviceOs = request.getParameter("device_os");
 	final String strMacAddress = request.getParameter("mac_address");
+	Logs.showTrace("********"+strDeviceId+" os: "+strDeviceOs+" mac: "+strMacAddress);
 	boolean bSuccess = false; 
 	String strError = null;
 	String strMessage = null;
