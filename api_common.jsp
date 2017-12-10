@@ -62,10 +62,10 @@
 		final public static String UPDATE_TIME = "update_time";
 	}
 
-	/*
-		final public static ArrayList<String> listDeviceField = new ArrayList<>(Arrays.asList(Common.DEVICE_ID,
-				Common.DEVICE_OS, Common.MAC_ADDRESS, Common.CREATE_TIME));
 	
+	/*	final public static ArrayList<String> listDeviceField = new ArrayList<>(Arrays.asList(Common.DEVICE_ID,
+				Common.DEVICE_OS, Common.MAC_ADDRESS, Common.CREATE_TIME));
+	*/
 		final public static ArrayList<String> listRoutineField = new ArrayList<>(
 				Arrays.asList(Common.ROUTINE_ID, Common.DEVICE_ID, Common.ROUTINE_TYPE, Common.TITLE, Common.START_TIME,
 						Common.REPEAT, Common.META_ID, Common.CREATE_TIME));
@@ -73,7 +73,7 @@
 		final public static ArrayList<String> listStoryField = new ArrayList<>(
 				Arrays.asList(Common.STORY_ID, Common.STORY_URL, Common.STORY_NAME, Common.CATEGORY, Common.LANGUAGE,
 						Common.TYPE, Common.CREATE_TIME));
-	*/
+	
 	public static class DeviceData {
 		public String device_id;
 		public String device_os;
@@ -96,7 +96,7 @@
 		public String device_id;
 		public String routine_type;
 		public String title;
-		public String start_date;
+		public String start_time;
 		public int repeat;
 		public int meta_id;
 		public String create_time;
@@ -474,7 +474,52 @@
 	
 	/** ROUTINE SETTING API **/ 
 	 
-	 
+	   public int queryRoutine(final String strDeviceId, final String strType, RoutineData routineData) {
+		int nCount = 0;
+		Connection conn = null;
+		String strSQL = "select * from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='" + strType + "'";
+
+		if (!StringUtility.isValid(strDeviceId)) {
+			return ERR_INVALID_PARAMETER;
+		}
+		try {
+	
+			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+
+			if (null != conn) {
+				Statement stat = conn.createStatement();
+				ResultSet rs = stat.executeQuery(strSQL);
+			
+				while (rs.next()) {
+					++nCount;
+					routineData.routine_id = rs.getInt("routine_id");
+					routineData.device_id = rs.getString("device_id");
+					routineData.routine_type = rs.getString("routine_type");
+					routineData.title = rs.getString("title");
+					routineData.start_time = rs.getString("start_time");
+					routineData.repeat = rs.getInt("repeat");
+					routineData.meta_id = rs.getInt("meta_id");
+					routineData.create_time = rs.getString("create_time");
+					routineData.update_time = rs.getString("update_time");
+				}
+				rs.close();
+				stat.close();
+			}
+			closeConn(conn);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
+		}
+		return nCount;
+	}
+	
+	
+	
+	
+	
+	
 	 
 	 
 	
