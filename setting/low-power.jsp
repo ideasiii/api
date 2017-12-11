@@ -9,97 +9,135 @@
 	final String strDeviceId = request.getParameter("device_id");
 	final String strType = "battery";
 	String strAction = request.getParameter("action");
-	int nAction = 0;
-	if(strAction != null && !strAction.isEmpty())
-		nAction = Integer.parseInt(strAction.trim());
-	
 	boolean bSuccess = false;
 	String strError = null;
 	String strMessage = null;
 	DeviceSetData deviSetData = new DeviceSetData();
 
-	int nCount = querySetting(strDeviceId, strType, deviSetData);
-	
-	if (0 < nCount) {
-		//setting exist
-		int nUpdate = 0;
-
-		// update battery setting 
-		nUpdate = updateBattery(strDeviceId, strType, nAction);
-
-		if (0 < nUpdate) {
-			bSuccess = true;
-
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-
-			Logs.showTrace("**********************nUpdate: " + nUpdate);
-			out.println(jobj.toString());
-		} else {
-
-			switch (nUpdate) {
-			case 0:
-				strError = "ER0500";
-				strMessage = "Internal server error.";
-				break;
-			case -1:
-				strError = "ER0500";
-				strMessage = "Internal server error.";
-				break;
-			case -2:
-				strError = "ER0220";
-				strMessage = "Invalid input.";
-				break;
-			}
-
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-			jobj.put("error", strError);
-			jobj.put("message", strMessage);
-
-			Logs.showTrace("********error*********nUpdate: " + nUpdate);
-			out.println(jobj.toString());
-		}
-
-	} else {
-		//setting not found
-		int nInsert = 0;
-
-		//insert battery setting
-		nInsert = insertBattery(strDeviceId, strType, nAction);
-
-		if (0 < nInsert) {
-			bSuccess = true;
-
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-
-			Logs.showTrace("**********************nInsert: " + nInsert);
-			out.println(jobj.toString());
-		} else {
+	int nAction = -1;
+	if (strAction != null && !strAction.trim().isEmpty()) {
 		
-			switch (nInsert) {
-			case 0:
-				strError = "ER0500";
-				strMessage = "Internal server error.";
-				break;
-			case -1:
-				strError = "ER0500";
-				strMessage = "Internal server error.";
-				break;
-			case -2:
-				strError = "ER0220";
-				strMessage = "Invalid input.";
-				break;
-			}
-
+		try {
+		nAction = Integer.parseInt(strAction.trim());
+		} catch (Exception e) {
+			strError = "ER0220";
+			strMessage = "Invalid input.";
+			
 			JSONObject jobj = new JSONObject();
 			jobj.put("success", bSuccess);
 			jobj.put("error", strError);
 			jobj.put("message", strMessage);
 
-			Logs.showTrace("********error*********nInsert: " + nInsert + "***nAction: " + nAction + "id: " + strDeviceId);
+			Logs.showTrace("********error*********nAction: " + nAction + " strAction: " + strAction);
 			out.println(jobj.toString());
+			return;
 		}
+		
+		int nCount = querySetting(strDeviceId, strType, deviSetData);
+
+		if (0 < nCount && -1 < nAction) {
+			//setting exist
+			int nUpdate = 0;
+
+			// update battery setting 
+			nUpdate = updateBattery(strDeviceId, strType, nAction);
+
+			if (0 < nUpdate) {
+				bSuccess = true;
+
+				JSONObject jobj = new JSONObject();
+				jobj.put("success", bSuccess);
+
+				Logs.showTrace("**********************nUpdate: " + nUpdate);
+				out.println(jobj.toString());
+			} else {
+
+				switch (nUpdate) {
+				case 0:
+					strError = "ER0500";
+					strMessage = "Internal server error.";
+					break;
+				case -1:
+					strError = "ER0500";
+					strMessage = "Internal server error.";
+					break;
+				case -2:
+					strError = "ER0220";
+					strMessage = "Invalid input.";
+					break;
+				}
+
+				JSONObject jobj = new JSONObject();
+				jobj.put("success", bSuccess);
+				jobj.put("error", strError);
+				jobj.put("message", strMessage);
+
+				Logs.showTrace("********error*********nUpdate: " + nUpdate);
+				out.println(jobj.toString());
+			}
+
+		} else {
+			//setting not found
+			int nInsert = 0;
+
+			//insert battery setting
+			nInsert = insertBattery(strDeviceId, strType, nAction);
+
+			if (0 < nInsert) {
+				bSuccess = true;
+
+				JSONObject jobj = new JSONObject();
+				jobj.put("success", bSuccess);
+
+				Logs.showTrace("**********************nInsert: " + nInsert);
+				out.println(jobj.toString());
+			} else {
+
+				switch (nInsert) {
+				case 0:
+					strError = "ER0500";
+					strMessage = "Internal server error.";
+					break;
+				case -1:
+					strError = "ER0500";
+					strMessage = "Internal server error.";
+					break;
+				case -2:
+					strError = "ER0220";
+					strMessage = "Invalid input.";
+					break;
+				}
+
+				JSONObject jobj = new JSONObject();
+				jobj.put("success", bSuccess);
+				jobj.put("error", strError);
+				jobj.put("message", strMessage);
+
+				Logs.showTrace("********error*********nInsert: " + nInsert + "***nAction: " + nAction + " id: "
+						+ strDeviceId);
+				out.println(jobj.toString());
+			}
+		}
+	
+	} else {
+		if (strAction == null) {
+			strError = "ER0120";
+			strMessage = "Required parameter missing.";
+		} else {
+			if (strAction.trim().isEmpty()) {
+				strError = "ER0220";
+				strMessage = "Invalid action.";
+			} else {
+				strError = "ER0220";
+				strMessage = "Invalid input.";
+			}
+		}
+	
+		JSONObject jobj = new JSONObject();
+		jobj.put("success", bSuccess);
+		jobj.put("error", strError);
+		jobj.put("message", strMessage);
+
+		out.println(jobj.toString());
 	}
 %>

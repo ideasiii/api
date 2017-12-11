@@ -41,7 +41,7 @@
 			case 0:
 				strError = "ER0500";
 				strMessage = "Internal server error.";
-				break;git
+				break;
 			case -1:
 				strError = "ER0500";
 				strMessage = "Internal server error.";
@@ -98,7 +98,7 @@
 			jobj.put("error", strError);
 			jobj.put("message", strMessage);
 
-			Logs.showTrace("********error*********nInsert: " + nInsert + "***nAction: " + nAction + "id: " + strDeviceId);
+			Logs.showTrace("********error*********nInsert: " + nInsert + "***nAction: " + nAction + " id: " + strDeviceId);
 			out.println(jobj.toString());
 		}
 	}

@@ -11,7 +11,7 @@
 	public final static int ERR_EXCEPTION = -1;
 	public final static int ERR_INVALID_PARAMETER = -2;
 	public final static int ERR_CONFLICT = -3;
-
+	
 	public class Common {
 
 		final public static String DB = "edubot";
@@ -65,7 +65,7 @@
 	
 	/*	final public static ArrayList<String> listDeviceField = new ArrayList<>(Arrays.asList(Common.DEVICE_ID,
 				Common.DEVICE_OS, Common.MAC_ADDRESS, Common.CREATE_TIME));
-	*/
+	
 		final public static ArrayList<String> listRoutineField = new ArrayList<>(
 				Arrays.asList(Common.ROUTINE_ID, Common.DEVICE_ID, Common.ROUTINE_TYPE, Common.TITLE, Common.START_TIME,
 						Common.REPEAT, Common.META_ID, Common.CREATE_TIME));
@@ -73,7 +73,7 @@
 		final public static ArrayList<String> listStoryField = new ArrayList<>(
 				Arrays.asList(Common.STORY_ID, Common.STORY_URL, Common.STORY_NAME, Common.CATEGORY, Common.LANGUAGE,
 						Common.TYPE, Common.CREATE_TIME));
-	
+		*/
 	public static class DeviceData {
 		public String device_id;
 		public String device_os;
