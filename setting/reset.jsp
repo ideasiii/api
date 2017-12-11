@@ -15,7 +15,7 @@
 	int nCount = queryDevice(strDeviceId, deviData);
 
 	if (0 < nCount) {
-		//setting exist
+		//Device exist
 		int nDelete = 0;
 
 		nDelete = deleteSetting(strDeviceId);
@@ -54,7 +54,7 @@
 		}
 
 	} else {
-		//setting not found
+		//Device not found
 		
 		switch (nCount) {
 			case 0:

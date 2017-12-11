@@ -9,15 +9,37 @@
 	final String strDeviceId = request.getParameter("device_id");
 	final String strType = "language";
 	String strAction = request.getParameter("action");
-	int nAction = 0;
-	if (strAction != null && !strAction.isEmpty())
-		nAction = Integer.parseInt(strAction.trim());
-
 	boolean bSuccess = false;
 	String strError = null;
 	String strMessage = null;
+	DeviceData deviData = new DeviceData();
 	DeviceSetData deviSetData = new DeviceSetData();
+		
+	int nAction = -1;
+	if (strAction != null && !strAction.isEmpty()) {
+		
+		try {
+		nAction = Integer.parseInt(strAction.trim());
+		} catch (Exception e) {
+			strError = "ER0220";
+			strMessage = "Invalid input.";
+			
+			JSONObject jobj = new JSONObject();
+			jobj.put("success", bSuccess);
+			jobj.put("error", strError);
+			jobj.put("message", strMessage);
 
+			Logs.showTrace("********error*********nAction: " + nAction + " strAction: " + strAction);
+			out.println(jobj.toString());
+			return;
+		}
+	
+		
+		int nCountDevice = queryDevice(strDeviceId, deviData);
+		
+		if (0 < nCountDevice) {
+			//Device exist
+			
 	int nCount = querySetting(strDeviceId, strType, deviSetData);
 
 	if (0 < nCount) {
@@ -27,7 +49,7 @@
 		// update language setting 
 		nUpdate = updateLanguage(strDeviceId, strType, nAction);
 
-		if (0 < nUpdate) {
+		if (0 < nUpdate && -1 < nAction) {
 			bSuccess = true;
 
 			JSONObject jobj = new JSONObject();
@@ -68,7 +90,7 @@
 		//insert language setting
 		nInsert = insertLanguage(strDeviceId, strType, nAction);
 
-		if (0 < nInsert) {
+		if (0 < nInsert && -1 < nAction) {
 			bSuccess = true;
 
 			JSONObject jobj = new JSONObject();
@@ -101,5 +123,57 @@
 			Logs.showTrace("********error*********nInsert: " + nInsert + "***nAction: " + nAction + " id: " + strDeviceId);
 			out.println(jobj.toString());
 		}
-	}
+	} 
+	
+		} else {
+			//Device not found
+			switch (nCountDevice)
+			{
+			case 0:
+				strError = "ER0100";
+				strMessage = "device_id not found.";
+				break;
+			case -1:
+				strError = "ER0500";
+				strMessage = "Internal server error.";
+				break;
+			case -2:
+				strError = "ER0220";
+				strMessage = "Invalid device_id.";
+				break;
+			}
+				
+				JSONObject jobj = new JSONObject();
+				jobj.put("success", bSuccess);
+				jobj.put("error", strError);
+				jobj.put("message", strMessage);
+				
+				Logs.showTrace("********error*********nCountDevice: " + nCountDevice);
+				out.println(jobj.toString());
+		}
+	
+	
+	} else {
+		if (strAction == null) {
+			strError = "ER0120";
+			strMessage = "Required parameter missing.";
+		} else {
+			if (strAction.trim().isEmpty()) {
+				strError = "ER0220";
+				strMessage = "Invalid action.";
+			} else {
+				strError = "ER0220";
+				strMessage = "Invalid input.";
+			}
+		}
+	
+		JSONObject jobj = new JSONObject();
+		jobj.put("success", bSuccess);
+		jobj.put("error", strError);
+		jobj.put("message", strMessage);
+
+		out.println(jobj.toString());
+	} // invalid Action
+	
+	
 %>

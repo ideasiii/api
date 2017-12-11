@@ -63,9 +63,9 @@
 	}
 
 	
-	/*	final public static ArrayList<String> listDeviceField = new ArrayList<>(Arrays.asList(Common.DEVICE_ID,
+	final public static ArrayList<String> listDeviceField = new ArrayList<String>(Arrays.asList(Common.DEVICE_ID,
 				Common.DEVICE_OS, Common.MAC_ADDRESS, Common.CREATE_TIME));
-	
+	/*
 		final public static ArrayList<String> listRoutineField = new ArrayList<>(
 				Arrays.asList(Common.ROUTINE_ID, Common.DEVICE_ID, Common.ROUTINE_TYPE, Common.TITLE, Common.START_TIME,
 						Common.REPEAT, Common.META_ID, Common.CREATE_TIME));
@@ -73,7 +73,7 @@
 		final public static ArrayList<String> listStoryField = new ArrayList<>(
 				Arrays.asList(Common.STORY_ID, Common.STORY_URL, Common.STORY_NAME, Common.CATEGORY, Common.LANGUAGE,
 						Common.TYPE, Common.CREATE_TIME));
-		*/
+	*/	
 	public static class DeviceData {
 		public String device_id;
 		public String device_os;
@@ -368,7 +368,7 @@
 		PreparedStatement pst = null;
 		String strSQL = "insert into device_setting(device_id, setting_type, action) values (?,?,?)";
 
-		if (strType != "language" || 1 < nAction || 0 > nAction) {
+		if (strType != "language" || 0 != nAction) {
 			return ERR_INVALID_PARAMETER;
 		}
 		if (!StringUtility.isValid(strDeviceId)) {
@@ -403,7 +403,7 @@
 		PreparedStatement pst = null;
 		String strSQL = "update device_setting set action = ? where device_id =? and setting_type = ?";
 
-		if (strType != "language" || 1 < nAction || 0 > nAction) {
+		if (strType != "language" || 0 != nAction) {
 			return ERR_INVALID_PARAMETER;
 		}
 		if (!StringUtility.isValid(strDeviceId)) {
