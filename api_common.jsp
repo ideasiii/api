@@ -14,7 +14,11 @@
 	
 	public class Common {
 
-		final public static String DB_URL = "jdbc:mysql://52.68.108.37:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
+
+	/*	final public static String DB_URL = "jdbc:mysql://52.68.108.37:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
+		wins IP version */ 
+		
+		final public static String DB_URL = "jdbc:mysql://127.0.0.1:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
 		final public static String DB_USER = "more";
 		final public static String DB_PASS = "ideas123!";
 
