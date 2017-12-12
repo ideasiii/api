@@ -128,7 +128,7 @@
 
 		try {
 			//load mysql Driver 
-			Class.forName("com.mysql.jdbc.Driver").newInstance();
+			Class.forName("com.mysql.jdbc.Driver")//.newInstance();
 			//connect database
 			conn = DriverManager.getConnection("jdbc:mysql://52.68.108.37:3306/" + strDB + "?user=" + strUser
 					+ "&password=" + strPwd + "&useUnicode=true&characterEncoding=UTF-8");
