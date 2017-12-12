@@ -14,7 +14,7 @@
 	
 	public class Common {
 
-		final public static String DB = "edubot";
+		final public static String DB_URL = "jdbc:mysql://52.68.108.37:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
 		final public static String DB_USER = "more";
 		final public static String DB_PASS = "ideas123!";
 
@@ -128,11 +128,13 @@
 
 		try {
 			//load mysql Driver 
-			Class.forName("com.mysql.jdbc.Driver")//.newInstance();
+			Class.forName("com.mysql.jdbc.Driver");//.newInstance();
 			//connect database
-			conn = DriverManager.getConnection("jdbc:mysql://52.68.108.37:3306/" + strDB + "?user=" + strUser
+			conn = DriverManager.getConnection(strDB,strUser,strPwd);
+			
+			/*("jdbc:mysql://52.68.108.37:3306/" + strDB + "?user=" + strUser
 					+ "&password=" + strPwd + "&useUnicode=true&characterEncoding=UTF-8");
-
+*/
 		} catch (SQLException se) {
 			se.printStackTrace();
 			Logs.showTrace("MySQL Exception: " + se.toString());
@@ -184,7 +186,7 @@
 
 		try {
 
-			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
 				Statement stat = conn.createStatement();
@@ -227,7 +229,7 @@
 			if (0 < nCount)
 				return ERR_CONFLICT;
 
-			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
 				pst = conn.prepareStatement(strSQL);
@@ -260,7 +262,7 @@
 		}
 		try {
 	
-			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
 				Statement stat = conn.createStatement();
@@ -304,7 +306,7 @@
 		}
 		try {
 	
-			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
 				pst = conn.prepareStatement(strSQL);
@@ -339,7 +341,7 @@
 		}
 		try {
 	
-			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
 				pst = conn.prepareStatement(strSQL);
@@ -376,7 +378,7 @@
 		}
 		try {
 	
-			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
 				pst = conn.prepareStatement(strSQL);
@@ -411,7 +413,7 @@
 		}
 		try {
 	
-			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
 				pst = conn.prepareStatement(strSQL);
@@ -445,7 +447,7 @@
 		}
 		try {
 			
-			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
 				
@@ -484,7 +486,7 @@
 		}
 		try {
 	
-			conn = connect(Common.DB, Common.DB_USER, Common.DB_PASS);
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
 				Statement stat = conn.createStatement();
