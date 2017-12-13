@@ -485,7 +485,7 @@
 		Connection conn = null;
 		String strSQL = "select * from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='"
 				+ strType + "'";
-		ArrayList<RoutineData> listRoutineData = new ArrayList<RoutineData>();
+		//ArrayList<RoutineData> listRoutine = new ArrayList<RoutineData>(); 
 		
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
@@ -501,16 +501,16 @@
 				while (rs.next()) {
 					++nCount;
 					RoutineData routineData = new RoutineData();
-					
 					routineData.routine_id = rs.getInt("routine_id");
 					routineData.device_id = rs.getString("device_id");
 					routineData.title = rs.getString("title");
 					routineData.start_time = rs.getString("start_time");
 					routineData.repeat = rs.getInt("repeat");
-					routineData.meta_id = rs.getInt("meta_id");
-					listRoutineData.add(routineData);
+					routineData.meta_id = rs.getInt("meta_id");  
+					listRoutine.add(routineData);
+					//System.out.println(listRoutine.get(0).routine_id);
 				}
-				nCount = listRoutine.size();
+				//nCount = listRoutine.size();
 				rs.close();
 				stat.close();
 			}
