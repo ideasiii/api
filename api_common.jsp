@@ -7,6 +7,8 @@
 <%@ page import="more.StringUtility"%>
 <%@ page import="java.util.HashMap"%>
 <%@ page import="java.util.Iterator"%>
+<%@ page import="java.util.regex.Matcher"%>
+<%@ page import="java.util.regex.Pattern"%>
 
 <%!public final static int ERR_SUCCESS = 1;
 	public final static int ERR_FAIL = 0;
@@ -485,7 +487,6 @@
 		Connection conn = null;
 		String strSQL = "select * from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='"
 				+ strType + "'";
-		//ArrayList<RoutineData> listRoutine = new ArrayList<RoutineData>(); 
 		
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
@@ -523,16 +524,30 @@
 		}
 		return nCount;
 	}
+	
+	public static boolean checkTime(String str){  
+	    boolean flag = false;  
+	    try {  
+	        String check = "(?:[01]\\d|2[0123]):(?:[012345]\\d):(?:[012345]\\d)";   
+	        Pattern regex = Pattern.compile(check);  
+	        Matcher matcher = regex.matcher(str);  
+	        flag = matcher.matches();  
+	    } catch (Exception e) {  
+	        e.printStackTrace();  
+	        flag = false;  
+	    }  
+	    return flag;  
+	}  
 	 
 	/****    Brush Teeth    ****/
-/*
-	public int insertBrush(final String strDeviceId, final String strType, final int nAction) {
+
+	public int insertBrush(final String strDeviceId, final String strType, final String strTitle, final String strTime, final int nRepeat) {
 		int nCount = 0;
 		Connection conn = null;
 		PreparedStatement pst = null;
-		String strSQL = "insert into device_setting(device_id, setting_type, action) values (?,?,?)";
+		String strSQL = "insert into routine_setting(device_id, routine_type, title, start_time, repeat) values (?,?,?,?,?)";
 
-		if (strType != "battery" || 1 < nAction || 0 > nAction) {
+		if (strType != "brush teeth" || 1 < nRepeat || 0 > nRepeat) {
 			return ERR_INVALID_PARAMETER;
 		}
 		if (!StringUtility.isValid(strDeviceId)) {
@@ -547,7 +562,9 @@
 				int idx = 1;
 				pst.setString(idx++, strDeviceId);
 				pst.setString(idx++, strType);
-				pst.setInt(idx++, nAction);
+				pst.setString(idx++, strTitle);
+				pst.setString(idx++, strTime);
+				pst.setInt(idx++, nRepeat);
 				pst.executeUpdate();
 			}
 			pst.close();
@@ -561,7 +578,7 @@
 		return ERR_SUCCESS;
 	}
 	
-	*/
+	
 	
 	
 	

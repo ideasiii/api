@@ -21,7 +21,6 @@
 		Logs.showTrace("**********************listRoutine: " + listRoutine.get(0).device_id);
 
 		JSONArray jsonArray = new JSONArray();
-
 		for (int i = 0; i < listRoutine.size(); i++) {
 			JSONObject jobj = new JSONObject();
 			jobj.put("routine_id", listRoutine.get(i).routine_id);

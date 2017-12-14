@@ -3,7 +3,7 @@
 <%@ page import="org.json.JSONObject"%>
 
 
-<%@include file="../api_common.jsp"%>
+<%@include file="../api_common.jsp"%> 
 
 <%
 	final String strDeviceId = request.getParameter("device_id");
