@@ -34,7 +34,7 @@
 			jobj.put("error", strError);
 			jobj.put("message", strMessage);
 
-			Logs.showTrace("********error*********Time: " + time);
+			Logs.showTrace("********error*********Time: " + time + "  " + strTime);
 			out.println(jobj.toString());
 			return;
 			}
@@ -87,34 +87,71 @@
 			if (0 < nCountDevice) {
 				//Device exist
 		
-				int nCount = queryRoutine(strDeviceId, strType, listRoutine);
+				int nCount = queryRoutine(strDeviceId, strType, strTime, listRoutine); 
 		
 				if (0 == nCount) {
-					//routine not found
+					//routine not found: insert
 				int nInsert = 0;
 					
 				 nInsert = insertBrush(strDeviceId, strType, strTitle, strTime, nRepeat);
 				
 				 if (0 < nInsert && -1 < nRepeat) {
+					 
+					 int nRoutineId = queryRoutineID(strDeviceId, strType, strTime);
+					 
+					 if (0 < nRoutineId) {
+						 //SUCCESS
 						bSuccess = true;
-						int nRoutineId = routineData.routine_id;
 						
 						JSONObject jobj = new JSONObject();
 						jobj.put("success", bSuccess);
-						jobj.put("routine_id", bSuccess);
+						jobj.put("routine_id", nRoutineId);
 
-						Logs.showTrace("**********************nInsert: " + nInsert);
+						Logs.showTrace("**********************nInsert: " + nInsert + " nRoutineId: " + nRoutineId);
 						out.println(jobj.toString());
+					 } else {
+						//routineID exception
+						
+								strError = "ER0500";
+								strMessage = "Internal server error.";
+						
+							JSONObject jobj = new JSONObject();
+							jobj.put("success", bSuccess);
+							jobj.put("error", strError);
+							jobj.put("message", strMessage);
+
+							Logs.showTrace("********error*********nRoutineId: " + nRoutineId + "***nRepeat: " + nRepeat + " id: " + strDeviceId + " time: " + strTime);
+							out.println(jobj.toString());
+							return;
+					 }
+						
+					} else {
+						//routine insert failed
+						switch (nInsert) {
+						case 0:
+							strError = "ER0500";
+							strMessage = "Internal server error.";
+							break;
+						case -1:
+							strError = "ER0500";
+							strMessage = "Internal server error.";
+							break;
+						case -2:
+							strError = "ER0220";
+							strMessage = "Invalid input.";
+							break;
+						}
+
+						JSONObject jobj = new JSONObject();
+						jobj.put("success", bSuccess);
+						jobj.put("error", strError);
+						jobj.put("message", strMessage);
+
+						Logs.showTrace("********error*********nInsert: " + nInsert + "***nRepeat: " + nRepeat + " id: " + strDeviceId + " time: " + strTime);
+						out.println(jobj.toString());
+						return;
 					}	
 				 
-				 
-				 
-				 
-				 
-				 
-					
-					
-					
 					
 				} else {
 				//routine conflict or exception

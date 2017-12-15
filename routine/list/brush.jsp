@@ -14,7 +14,7 @@
 	String strMessage = null;
 	ArrayList<RoutineData> listRoutine = new ArrayList<RoutineData>();
 
-	int nCount = queryRoutine(strDeviceId, strType, listRoutine);
+	int nCount = queryRoutineList(strDeviceId, strType, listRoutine);
 
 	if (0 < nCount) {
 		//routine setting exist

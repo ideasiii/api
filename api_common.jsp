@@ -482,7 +482,7 @@
 
 	/** ROUTINE SETTING API **/
 
-	public int queryRoutine(final String strDeviceId, final String strType,  ArrayList<RoutineData> listRoutine) {
+	public int queryRoutineList(final String strDeviceId, final String strType,  ArrayList<RoutineData> listRoutine) {
 		int nCount = 0;
 		Connection conn = null;
 		String strSQL = "select * from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='"
@@ -525,6 +525,81 @@
 		return nCount;
 	}
 	
+	public int queryRoutine(final String strDeviceId, final String strType, final String strTime, ArrayList<RoutineData> listRoutine) {
+		int nCount = 0;
+		Connection conn = null;
+		String strSQL = "select * from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='"
+				+ strType + "' and start_time ='" + strTime + "'";
+		
+		if (!StringUtility.isValid(strDeviceId)) {
+			return ERR_INVALID_PARAMETER;
+		}
+		try {
+
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+
+			if (null != conn) {
+				Statement stat = conn.createStatement();
+				ResultSet rs = stat.executeQuery(strSQL);
+
+				while (rs.next()) {
+					++nCount;
+					RoutineData routineData = new RoutineData();
+					routineData.routine_id = rs.getInt("routine_id");
+					routineData.device_id = rs.getString("device_id");
+					routineData.title = rs.getString("title");
+					routineData.start_time = rs.getString("start_time");
+					routineData.repeat = rs.getInt("repeat");
+					routineData.meta_id = rs.getInt("meta_id");  
+					listRoutine.add(routineData);
+				}
+				rs.close();
+				stat.close();
+			}
+			closeConn(conn);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
+		}
+		return nCount;
+	}
+	
+	public int queryRoutineID(final String strDeviceId, final String strType, final String strTime) {
+		int nRoutineId = 0;
+		Connection conn = null;
+		String strSQL = "select routine_id from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='"
+				+ strType + "' and start_time ='" + strTime + "'";
+		
+		if (!StringUtility.isValid(strDeviceId)) {
+			return ERR_INVALID_PARAMETER;
+		}
+		try {
+
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+
+			if (null != conn) {
+				Statement stat = conn.createStatement();
+				ResultSet rs = stat.executeQuery(strSQL);
+
+				while (rs.next()) {
+					nRoutineId = rs.getInt("routine_id");
+				}
+				rs.close();
+				stat.close();
+			}
+			closeConn(conn);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
+		}
+		return nRoutineId;
+	}
+	
+	
 	public static boolean checkTime(String str){  
 	    boolean flag = false;  
 	    try {  
@@ -545,9 +620,9 @@
 		int nCount = 0;
 		Connection conn = null;
 		PreparedStatement pst = null;
-		String strSQL = "insert into routine_setting(device_id, routine_type, title, start_time, repeat) values (?,?,?,?,?)";
+		String strSQL = "insert into routine_setting(device_id, routine_type, title, start_time, repeat)values(?,?,?,?,?)"; 
 
-		if (strType != "brush teeth" || 1 < nRepeat || 0 > nRepeat) {
+		if (strType != "brush teeth" || 1 < nRepeat || 0 > nRepeat) { 
 			return ERR_INVALID_PARAMETER;
 		}
 		if (!StringUtility.isValid(strDeviceId)) {
