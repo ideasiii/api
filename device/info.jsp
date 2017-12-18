@@ -20,7 +20,6 @@
 		JSONObject jobj = new JSONObject();
 		jobj.put("success", bSuccess);
 		jobj.put("device_os", deviData.device_os);
-		jobj.put("mac_address", deviData.mac_address);
 		
 		Logs.showTrace("**********************nCount: " + nCount);
 		out.println(jobj.toString());

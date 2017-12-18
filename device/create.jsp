@@ -8,8 +8,7 @@
 <%	
 	final String strDeviceId = request.getParameter("device_id");
 	final String strDeviceOs = request.getParameter("device_os");
-	final String strMacAddress = request.getParameter("mac_address");
-	Logs.showTrace("********"+strDeviceId+" os: "+strDeviceOs+" mac: "+strMacAddress);
+	Logs.showTrace("********"+strDeviceId+" os: "+strDeviceOs);
 	boolean bSuccess = false; 
 	String strError = null;
 	String strMessage = null;
@@ -36,7 +35,7 @@
 	} else {
 		//deviceID not found
 	
-	int nInsert = insertDevice(strDeviceId, strDeviceOs, strMacAddress);
+	int nInsert = insertDevice(strDeviceId, strDeviceOs);
 	
 	if (0 < nInsert) {
 		bSuccess = true;
