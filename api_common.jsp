@@ -218,7 +218,7 @@
 		int nCount = 0;
 		Connection conn = null;
 		PreparedStatement pst = null;
-		String strSQL = "insert into device_list(device_id, device_os, mac_address) values (?,?,?)";
+		String strSQL = "insert into device_list(device_id, device_os) values (?,?)";
 
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
