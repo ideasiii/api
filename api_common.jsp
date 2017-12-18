@@ -370,7 +370,7 @@
 		PreparedStatement pst = null;
 		String strSQL = "insert into device_setting(device_id, setting_type, action) values (?,?,?)";
 
-		if (strType != "language" || 0 != nAction) {
+		if (strType != "language" || 1 < nAction || 0 > nAction) {
 			return ERR_INVALID_PARAMETER;
 		}
 		if (!StringUtility.isValid(strDeviceId)) {
@@ -405,7 +405,7 @@
 		PreparedStatement pst = null;
 		String strSQL = "update device_setting set action = ? where device_id =? and setting_type = ?";
 
-		if (strType != "language" || 0 != nAction) {
+		if (strType != "language"|| 1 < nAction || 0 > nAction) {
 			return ERR_INVALID_PARAMETER;
 		}
 		if (!StringUtility.isValid(strDeviceId)) {
