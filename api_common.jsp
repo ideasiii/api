@@ -5,6 +5,8 @@
 <%@ page import="java.util.Arrays"%>
 <%@ page import="more.Logs"%>
 <%@ page import="more.StringUtility"%>
+<%@ page import="java.util.regex.Matcher"%>
+<%@ page import="java.util.regex.Pattern"%>
 
 <%!public final static int ERR_SUCCESS = 1;
 	public final static int ERR_FAIL = 0;
@@ -15,10 +17,11 @@
 	public class Common {
 
 
-	/*	final public static String DB_URL = "jdbc:mysql://52.68.108.37:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
-		wins IP version */ 
+		final public static String DB_URL = "jdbc:mysql://52.68.108.37:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
+		//wins IP version 
 		
-		final public static String DB_URL = "jdbc:mysql://10.0.20.130:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
+	/*	final public static String DB_URL = "jdbc:mysql://10.0.20.130:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
+		*/
 		final public static String DB_USER = "more";
 		final public static String DB_PASS = "ideas123!";
 
@@ -474,41 +477,43 @@
 	return ERR_SUCCESS;
 	 }
 	
-	/** ROUTINE SETTING API **/ 
-	 
-	   public int queryRoutine(final String strDeviceId, final String strType, RoutineData routineData) {
+	/** ROUTINE SETTING API **/
+
+	public int queryRoutineList(final String strDeviceId, final String strType,  ArrayList<RoutineData> listRoutine) {
 		int nCount = 0;
 		Connection conn = null;
-		String strSQL = "select * from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='" + strType + "'";
-
+		String strSQL = "select * from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='"
+				+ strType + "'";
+		
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
 		}
 		try {
-	
+
 			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
 				Statement stat = conn.createStatement();
 				ResultSet rs = stat.executeQuery(strSQL);
-			
+
 				while (rs.next()) {
 					++nCount;
+					RoutineData routineData = new RoutineData();
 					routineData.routine_id = rs.getInt("routine_id");
 					routineData.device_id = rs.getString("device_id");
-					routineData.routine_type = rs.getString("routine_type");
 					routineData.title = rs.getString("title");
 					routineData.start_time = rs.getString("start_time");
 					routineData.repeat = rs.getInt("repeat");
-					routineData.meta_id = rs.getInt("meta_id");
-					routineData.create_time = rs.getString("create_time");
-					routineData.update_time = rs.getString("update_time");
+					routineData.meta_id = rs.getInt("meta_id");  
+					listRoutine.add(routineData);
+					//System.out.println(listRoutine.get(0).routine_id);
 				}
+				//nCount = listRoutine.size();
 				rs.close();
 				stat.close();
 			}
 			closeConn(conn);
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			Logs.showTrace(e.toString());
@@ -517,13 +522,138 @@
 		return nCount;
 	}
 	
+	public int queryRoutine(final String strDeviceId, final String strType, final String strTime, ArrayList<RoutineData> listRoutine) {
+		int nCount = 0;
+		Connection conn = null;
+		String strSQL = "select * from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='"
+				+ strType + "' and start_time ='" + strTime + "'";
+		
+		if (!StringUtility.isValid(strDeviceId)) {
+			return ERR_INVALID_PARAMETER;
+		}
+		try {
+
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+
+			if (null != conn) {
+				Statement stat = conn.createStatement();
+				ResultSet rs = stat.executeQuery(strSQL);
+
+				while (rs.next()) {
+					++nCount;
+					RoutineData routineData = new RoutineData();
+					routineData.routine_id = rs.getInt("routine_id");
+					routineData.device_id = rs.getString("device_id");
+					routineData.title = rs.getString("title");
+					routineData.start_time = rs.getString("start_time");
+					routineData.repeat = rs.getInt("repeat");
+					routineData.meta_id = rs.getInt("meta_id");  
+					listRoutine.add(routineData);
+				}
+				rs.close();
+				stat.close();
+			}
+			closeConn(conn);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
+		}
+		return nCount;
+	}
+	
+	public int queryRoutineID(final String strDeviceId, final String strType, final String strTime) {
+		int nRoutineId = 0;
+		Connection conn = null;
+		String strSQL = "select routine_id from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='"
+				+ strType + "' and start_time ='" + strTime + "'";
+		
+		if (!StringUtility.isValid(strDeviceId)) {
+			return ERR_INVALID_PARAMETER;
+		}
+		try {
+
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+
+			if (null != conn) {
+				Statement stat = conn.createStatement();
+				ResultSet rs = stat.executeQuery(strSQL);
+
+				while (rs.next()) {
+					nRoutineId = rs.getInt("routine_id");
+				}
+				rs.close();
+				stat.close();
+			}
+			closeConn(conn);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
+		}
+		return nRoutineId;
+	}
 	
 	
-	
-	
-	
+	public static boolean checkTime(String str){  
+	    boolean flag = false;  
+	    try {  
+	        String check = "(?:[01]\\d|2[0123]):(?:[012345]\\d):(?:[012345]\\d)";   
+	        Pattern regex = Pattern.compile(check);  
+	        Matcher matcher = regex.matcher(str);  
+	        flag = matcher.matches();  
+	    } catch (Exception e) {  
+	        e.printStackTrace();  
+	        flag = false;  
+	    }  
+	    return flag;  
+	}  
 	 
-	 
+	/****    Brush Teeth    ****/
+
+	public int insertBrush(final String strDeviceId, final String strType, final String strTitle, final String strTime, final int nRepeat) {
+		int nCount = 0;
+		Connection conn = null;
+		PreparedStatement pst = null;
+		String strSQL = "insert into routine_setting(device_id, routine_type, title, start_time, `repeat`)values(?,?,?,?,?)"; 
+
+		if (strType != "brush teeth" || 1 < nRepeat || 0 > nRepeat) { 
+			return ERR_INVALID_PARAMETER;
+		}
+		if (!StringUtility.isValid(strDeviceId)) {
+			return ERR_INVALID_PARAMETER;
+		}
+		try {
+
+			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+
+			if (null != conn) {
+				pst = conn.prepareStatement(strSQL);
+				int idx = 1;
+				pst.setString(idx++, strDeviceId);
+				pst.setString(idx++, strType);
+				pst.setString(idx++, strTitle);
+				pst.setString(idx++, strTime);
+				pst.setInt(idx++, nRepeat);
+				System.out.println(pst.toString());
+				pst.executeUpdate();
+			}
+			pst.close();
+			closeConn(conn);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			Logs.showTrace(e.toString());
+			return ERR_EXCEPTION;
+		}
+		return ERR_SUCCESS;
+	}
+	
+	
+	
+	
 	
 	
 	

@@ -15,8 +15,9 @@
 	DeviceData deviData = new DeviceData();
 	
 	
-	int nCount = queryDevice(strDeviceId, deviData);
+	//int nCount = queryDevice(strDeviceId, deviData);
 	
+/*
 	if (0 < nCount) {
 		//deviceID exist
 	
@@ -30,9 +31,9 @@
 		
 		Logs.showTrace("********error*********nCount: " + nCount);
 		out.println(jobj.toString());
-	
 		
 	} else {
+		*/
 		//deviceID not found
 	
 	int nInsert = insertDevice(strDeviceId, strDeviceOs);
@@ -45,9 +46,8 @@
 		
 		Logs.showTrace("**********************nInsert: " + nInsert);
 		out.println(jobj.toString());
-		}
 		
-		else {
+		} else {
 			
 			switch (nInsert)
 			{
@@ -63,6 +63,10 @@
 				strError = "ER0220";
 				strMessage = "Invalid input.";
 				break;
+			case -3:
+				strError = "ER0240";
+				strMessage = "device_id conflict.";
+				break;
 			}
 				
 				JSONObject jobj = new JSONObject();
@@ -74,6 +78,6 @@
 				out.println(jobj.toString());
 		}
 	
-	}
+//	}
 %>
 
