@@ -1,5 +1,3 @@
-<%@ page contentType="text/html; charset=utf-8" language="java"
-	session="false"%>
 <%@ page import="org.json.JSONObject"%>
 <%@ page import="org.json.JSONArray"%>
 <%@ page import="org.json.JSONException"%>

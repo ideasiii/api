@@ -1,5 +1,5 @@
 <%@ page trimDirectiveWhitespaces="true" %>
-<%@ page contentType="text/html; charset=utf-8" language="java"
+<%@ page contentType="application/json; charset=utf-8" language="java"
 	session="false"%>
 <%@ page import="java.sql.*"%>
 <%@ page import="java.util.ArrayList"%>
@@ -9,7 +9,8 @@
 <%@ page import="java.util.regex.Matcher"%>
 <%@ page import="java.util.regex.Pattern"%>
 
-<%!public final static int ERR_SUCCESS = 1;
+<%! // shared methods and constants
+    public final static int ERR_SUCCESS = 1;
 	public final static int ERR_FAIL = 0;
 	public final static int ERR_EXCEPTION = -1;
 	public final static int ERR_INVALID_PARAMETER = -2;
