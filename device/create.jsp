@@ -3,6 +3,45 @@
 
 <%@include file="../api_common.jsp"%>
 
+<%! // methods used ONLY within this file
+	public int insertDevice(final String strDeviceId, final String strDeviceOs) {
+	    int nCount = 0;
+	    Connection conn = null;
+	    PreparedStatement pst = null;
+	    String strSQL = "insert into device_list(device_id, device_os) values (?,?)";
+	
+	    if (!StringUtility.isValid(strDeviceId)) {
+	        return ERR_INVALID_PARAMETER;
+	    }
+	
+	    try {
+	        DeviceData deviData = new DeviceData();
+	        nCount = queryDevice(strDeviceId, deviData);
+	        if (0 < nCount)
+	            return ERR_CONFLICT;
+	
+	        conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+	
+	        if (null != conn) {
+	            pst = conn.prepareStatement(strSQL);
+	            int idx = 1;
+	            pst.setString(idx++, strDeviceId);
+	            pst.setString(idx++, strDeviceOs);
+	            pst.executeUpdate();
+	        }
+	        pst.close();
+	        closeConn(conn);
+	
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        Logs.showTrace(e.toString());
+	        return ERR_EXCEPTION;
+	    }
+	    return ERR_SUCCESS;
+	}
+
+%>
+
 <%	
 	final String strDeviceId = request.getParameter("device_id");
 	final String strDeviceOs = request.getParameter("device_os");

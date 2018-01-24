@@ -3,6 +3,79 @@
 
 <%@include file="../api_common.jsp"%>
 
+<%! // methods ONLY used within this file
+
+	public int insertLanguage(final String strDeviceId, final String strType, final int nAction) {
+	    int nCount = 0;
+	    Connection conn = null;
+	    PreparedStatement pst = null;
+	    String strSQL = "insert into device_setting(device_id, setting_type, action) values (?,?,?)";
+	
+	    if (strType != "language" || 1 < nAction || 0 > nAction) {
+	        return ERR_INVALID_PARAMETER;
+	    }
+	    if (!StringUtility.isValid(strDeviceId)) {
+	        return ERR_INVALID_PARAMETER;
+	    }
+	    try {
+	
+	        conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+	
+	        if (null != conn) {
+	            pst = conn.prepareStatement(strSQL);
+	            int idx = 1;
+	            pst.setString(idx++, strDeviceId);
+	            pst.setString(idx++, strType);
+	            pst.setInt(idx++, nAction);
+	            pst.executeUpdate();
+	        }
+	        pst.close();
+	        closeConn(conn);
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        Logs.showTrace(e.toString());
+	        return ERR_EXCEPTION;
+	    }
+	    return ERR_SUCCESS;
+	}
+	
+	public int updateLanguage(final String strDeviceId, final String strType, final int nAction) {
+	    int nCount = 0;
+	    Connection conn = null;
+	    PreparedStatement pst = null;
+	    String strSQL = "update device_setting set action = ? where device_id =? and setting_type = ?";
+	
+	    if (strType != "language"|| 1 < nAction || 0 > nAction) {
+	        return ERR_INVALID_PARAMETER;
+	    }
+	    if (!StringUtility.isValid(strDeviceId)) {
+	        return ERR_INVALID_PARAMETER;
+	    }
+	    try {
+	
+	        conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+	
+	        if (null != conn) {
+	            pst = conn.prepareStatement(strSQL);
+	            int idx = 1;
+	            pst.setInt(idx++, nAction);
+	            pst.setString(idx++, strDeviceId);
+	            pst.setString(idx++, strType);
+	            pst.executeUpdate();
+	        }
+	        pst.close();
+	        closeConn(conn);
+	        
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        Logs.showTrace(e.toString());
+	        return ERR_EXCEPTION;
+	    }
+	    return ERR_SUCCESS;
+	}
+%>
+
 <%
 	final String strDeviceId = request.getParameter("device_id");
 	final String strType = "language";

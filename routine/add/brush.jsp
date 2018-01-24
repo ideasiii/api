@@ -2,7 +2,7 @@
 <%@ page import="org.json.JSONArray"%>
 <%@ page import="org.json.JSONException"%>
 
-<%@include file="../../api_common.jsp"%>  
+<%@include file="../../api_common.jsp"%>
 
 <%
 	final String strDeviceId = request.getParameter("device_id");
@@ -15,18 +15,18 @@
 	String strMessage = null;
 	DeviceData deviData = new DeviceData();
 	ArrayList<RoutineData> listRoutine = new ArrayList<RoutineData>();
-	
+
 
 	if (strTime != null && !strTime.isEmpty()) {
-	
-		boolean time = false; 
+
+		boolean time = false;
 		time = checkTime(strTime);
-		
-			if (time != true) {
-		
-			strError = "ER0210";
+
+		if (time != true) {
+
+			strError = "ER0220";
 			strMessage = "Invalid time format.";
-			
+
 			JSONObject jobj = new JSONObject();
 			jobj.put("success", bSuccess);
 			jobj.put("error", strError);
@@ -35,8 +35,7 @@
 			Logs.showTrace("********error*********Time: " + time + "  " + strTime);
 			out.println(jobj.toString());
 			return;
-			}
-			
+		}
 	} else {
 		if (strTime == null) {
 			strError = "ER0120";
@@ -50,7 +49,7 @@
 				strMessage = "Invalid input.";
 			}
 		}
-	
+
 		JSONObject jobj = new JSONObject();
 		jobj.put("success", bSuccess);
 		jobj.put("error", strError);
@@ -59,17 +58,17 @@
 		out.println(jobj.toString());
 		return;
 	}// invalid Start_time input
-			
-	
+
+
 	int nRepeat = -1;
 	if (strRepeat != null && !strRepeat.isEmpty()) {
-	
+
 		try {
 			nRepeat = Integer.parseInt(strRepeat.trim());
 			} catch (Exception e) {
 				strError = "ER0220";
 				strMessage = "Invalid input.";
-				
+
 				JSONObject jobj = new JSONObject();
 				jobj.put("success", bSuccess);
 				jobj.put("error", strError);
@@ -79,28 +78,28 @@
 				out.println(jobj.toString());
 				return;
 			}
-	
+
 		int nCountDevice = queryDevice(strDeviceId, deviData);
-		
+
 			if (0 < nCountDevice) {
 				//Device exist
-		
-				int nCount = queryRoutine(strDeviceId, strType, strTime, listRoutine); 
-		
+
+				int nCount = queryRoutine(strDeviceId, strType, strTime, listRoutine);
+
 				if (0 == nCount) {
 					//routine not found: insert
 				int nInsert = 0;
-					
+
 				 nInsert = insertBrush(strDeviceId, strType, strTitle, strTime, nRepeat);
-				
+
 				 if (0 < nInsert && -1 < nRepeat) {
-					 
+
 					 int nRoutineId = queryRoutineID(strDeviceId, strType, strTime);
-					 
+
 					 if (0 < nRoutineId) {
 						 //SUCCESS
 						bSuccess = true;
-						
+
 						JSONObject jobj = new JSONObject();
 						jobj.put("success", bSuccess);
 						jobj.put("routine_id", nRoutineId);
@@ -109,10 +108,10 @@
 						out.println(jobj.toString());
 					 } else {
 						//routineID exception
-						
+
 								strError = "ER0500";
 								strMessage = "Internal server error.";
-						
+
 							JSONObject jobj = new JSONObject();
 							jobj.put("success", bSuccess);
 							jobj.put("error", strError);
@@ -122,7 +121,7 @@
 							out.println(jobj.toString());
 							return;
 					 }
-						
+
 					} else {
 						//routine insert failed
 						switch (nInsert) {
@@ -148,12 +147,12 @@
 						Logs.showTrace("********error*********nInsert: " + nInsert + "***nRepeat: " + nRepeat + " id: " + strDeviceId + " time: " + strTime);
 						out.println(jobj.toString());
 						return;
-					}	
-				 
-					
+					}
+
+
 				} else {
 				//routine conflict or exception
-				switch (nCount) 
+				switch (nCount)
 				{
 				case 1:
 					strError = "ER0240";
@@ -173,12 +172,12 @@
 				jobj.put("success", bSuccess);
 				jobj.put("error", strError);
 				jobj.put("message", strMessage);
-				
+
 				Logs.showTrace("********error*********nCount: " + nCount);
 				out.println(jobj.toString());
 				return;
 				}
-				
+
 			} else {
 				//Device not found
 				switch (nCountDevice)
@@ -196,17 +195,17 @@
 					strMessage = "Invalid device_id.";
 					break;
 				}
-					
+
 					JSONObject jobj = new JSONObject();
 					jobj.put("success", bSuccess);
 					jobj.put("error", strError);
 					jobj.put("message", strMessage);
-					
+
 					Logs.showTrace("********error*********nCountDevice: " + nCountDevice);
 					out.println(jobj.toString());
 					return;
 			}
-		
+
 
 	} else {
 		if (strRepeat == null) {
@@ -221,7 +220,7 @@
 				strMessage = "Invalid input.";
 			}
 		}
-	
+
 		JSONObject jobj = new JSONObject();
 		jobj.put("success", bSuccess);
 		jobj.put("error", strError);
@@ -230,7 +229,7 @@
 		out.println(jobj.toString());
 		return;
 	} // invalid Repeat input
-	
 
-	
+
+
 %>
