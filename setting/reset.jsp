@@ -1,81 +1,100 @@
+<%@ include file="../api_common.jsp"%>
+<%@ include file="../response_generator.jsp"%>
+
 <%@ page import="org.json.JSONObject"%>
 
+<%! // methods used ONLY within this file
 
-<%@include file="../api_common.jsp"%> 
+    public int deleteSetting(final String strDeviceId) {
+        int nCount = 0;
+        Connection conn = null;
+        PreparedStatement pst = null;
+        String strSQL = null;
+        
+        if (!StringUtility.isValid(strDeviceId)) {
+            return ERR_INVALID_PARAMETER;
+        }
+        
+        try {            
+            conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+
+            if (null != conn) {
+                strSQL = "DELETE FROM device_setting WHERE device_id = ?";
+                pst = conn.prepareStatement(strSQL);
+                pst.setString(1, strDeviceId);
+                pst.executeUpdate();
+                pst.close();
+                
+                strSQL = "DELETE FROM routine_setting WHERE device_id = ?";
+                pst = conn.prepareStatement(strSQL);
+                pst.setString(1, strDeviceId);
+                pst.executeUpdate();
+                pst.close();
+            }
+            
+            closeConn(conn);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logs.showTrace(e.toString());
+            return ERR_EXCEPTION;
+        }
+        
+        return ERR_SUCCESS;
+     }
+%>
 
 <%
 	final String strDeviceId = request.getParameter("device_id");
-	boolean bSuccess = false;
-	String strError = null;
-	String strMessage = null;
-	DeviceData deviData = new DeviceData();
 
+	// TODO check if device_id exists in "request"
+	
+	DeviceData deviData = new DeviceData();
+	JSONObject jobj;
+	
 	int nCount = queryDevice(strDeviceId, deviData);
+    Logs.showTrace("**********************nCount: " + nCount);
 
 	if (0 < nCount) {
-		//Device exist
-		int nDelete = 0;
-
-		nDelete = deleteSetting(strDeviceId);
+		// Device record exists
+		int nDelete = deleteSetting(strDeviceId);
 		if (0 < nDelete) {
-			bSuccess = true;
-
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
+			jobj = new JSONObject();
+			jobj.put("success", true);
 
 			Logs.showTrace("**********************nDelete: " + nDelete);
-			out.println(jobj.toString());
 		} else {
-
 			switch (nDelete) {
-			case 0:
-				strError = "ER0500";
-				strMessage = "Internal server error.";
+			case ERR_FAIL:
+			case ERR_EXCEPTION:
+				jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+	            break;
+			case ERR_INVALID_PARAMETER:
+	            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
 				break;
-			case -1:
-				strError = "ER0500";
-				strMessage = "Internal server error.";
-				break;
-			case -2:
-				strError = "ER0220";
-				strMessage = "Invalid input.";
-				break;
+	        default:
+	            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
 			}
-
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-			jobj.put("error", strError);
-			jobj.put("message", strMessage);
 
 			Logs.showTrace("********error*********nDelete: " + nDelete);
-			out.println(jobj.toString());
+		}
+	} else {
+		// Device not found
+		switch (nCount) {
+			case ERR_FAIL:
+				jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND, "device_id not found.");
+                break;
+			case ERR_EXCEPTION:
+				jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+	            break;
+			case ERR_INVALID_PARAMETER:
+				jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
+				break;
+	        default:
+	            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
 		}
 
-	} else {
-		//Device not found
-		
-		switch (nCount) {
-			case 0:
-				strError = "ER0100";
-				strMessage = "device_id not found.";
-				break;
-			case -1:
-				strError = "ER0500";
-				strMessage = "Internal server error.";
-				break;
-			case -2:
-				strError = "ER0220";
-				strMessage = "Invalid input.";
-				break;
-			}
-			
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-			jobj.put("error", strError);
-			jobj.put("message", strMessage);
-
-			Logs.showTrace("********error*********nCount: " + nCount);
-			out.println(jobj.toString());
-	}
+		Logs.showTrace("********error*********nCount: " + nCount);
+	}	
+	
+	out.println(jobj.toString());
 %>
-

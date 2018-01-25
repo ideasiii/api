@@ -1,28 +1,30 @@
-<%@ page contentType="text/html; charset=utf-8" language="java"
+<%@ page trimDirectiveWhitespaces="true" %>
+<%@ page contentType="application/json; charset=utf-8" language="java"
 	session="false"%>
 <%@ page import="java.sql.*"%>
 <%@ page import="java.util.ArrayList"%>
 <%@ page import="java.util.Arrays"%>
 <%@ page import="more.Logs"%>
-<%@ page import="more.StringUtility"%>
-<%@ page import="java.util.HashMap"%>
-<%@ page import="java.util.Iterator"%>
+<%@ page import="more.StringUtility"%> 
 <%@ page import="java.util.regex.Matcher"%>
 <%@ page import="java.util.regex.Pattern"%>
 
-<%!public final static int ERR_SUCCESS = 1;
+<%! // shared methods and constants
+	public final static int ERR_SUCCESS = 1;
 	public final static int ERR_FAIL = 0;
 	public final static int ERR_EXCEPTION = -1;
 	public final static int ERR_INVALID_PARAMETER = -2;
 	public final static int ERR_CONFLICT = -3;
-
+	
 	public class Common {
 
-			final public static String DB_URL = "jdbc:mysql://52.68.108.37:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
-			//wins IP version 
 
-	/*	final public static String DB_URL = "jdbc:mysql://10.0.20.130:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
-	*/	final public static String DB_USER = "more";
+		final public static String DB_URL = "jdbc:mysql://52.68.108.37:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
+		//wins IP version 
+		
+	/*  final public static String DB_URL = "jdbc:mysql://10.0.20.130:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
+		*/
+		final public static String DB_USER = "more";
 		final public static String DB_PASS = "ideas123!";
 
 		/**
@@ -30,7 +32,6 @@
 		 **/
 		final public static String DEVICE_ID = "device_id";
 		final public static String DEVICE_OS = "device_os";
-		final public static String MAC_ADDRESS = "mac_address";
 
 		/**
 		 * MySQL DB : device_setting
@@ -69,20 +70,18 @@
 		final public static String UPDATE_TIME = "update_time";
 	}
 
-/*	final public static ArrayList<String> listDeviceField = new ArrayList<String>(
-			Arrays.asList(Common.DEVICE_ID, Common.DEVICE_OS, Common.MAC_ADDRESS, Common.CREATE_TIME, Common.UPDATE_TIME));
-
-	final public static ArrayList<String> listRoutineField = new ArrayList<String>(
+	final public static ArrayList<String> listDeviceField = new ArrayList<String>(
+			Arrays.asList(Common.DEVICE_ID, Common.DEVICE_OS, Common.CREATE_TIME));
+/*	final public static ArrayList<String> listRoutineField = new ArrayList<>(
 			Arrays.asList(Common.ROUTINE_ID, Common.DEVICE_ID, Common.ROUTINE_TYPE, Common.TITLE, Common.START_TIME,
-					Common.REPEAT, Common.META_ID, Common.CREATE_TIME, Common.UPDATE_TIME));
+					Common.REPEAT, Common.META_ID, Common.CREATE_TIME));
 
-	final public static ArrayList<String> listStoryField = new ArrayList<String>(Arrays.asList(Common.STORY_ID,
-			Common.STORY_URL, Common.STORY_NAME, Common.CATEGORY, Common.LANGUAGE, Common.TYPE, Common.CREATE_TIME, Common.UPDATE_TIME));
+	final public static ArrayList<String> listStoryField = new ArrayList<>(Arrays.asList(Common.STORY_ID,
+			Common.STORY_URL, Common.STORY_NAME, Common.CATEGORY, Common.LANGUAGE, Common.TYPE, Common.CREATE_TIME));
 */
 	public static class DeviceData {
 		public String device_id;
 		public String device_os;
-		public String mac_address;
 		public String create_time;
 		public String update_time;
 	}
@@ -201,7 +200,6 @@
 					++nCount;
 					deviData.device_id = rs.getString("device_id");
 					deviData.device_os = rs.getString("device_os");
-					deviData.mac_address = rs.getString("mac_address");
 					deviData.create_time = rs.getString("create_time");
 					deviData.update_time = rs.getString("update_time");
 				}
@@ -218,11 +216,11 @@
 		return nCount;
 	}
 
-	public int insertDevice(final String strDeviceId, final String strDeviceOs, final String strMacAddress) {
+	public int insertDevice(final String strDeviceId, final String strDeviceOs) {
 		int nCount = 0;
 		Connection conn = null;
 		PreparedStatement pst = null;
-		String strSQL = "insert into device_list(device_id, device_os, mac_address) values (?,?,?)";
+		String strSQL = "insert into device_list(device_id, device_os) values (?,?)";
 
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
@@ -241,7 +239,6 @@
 				int idx = 1;
 				pst.setString(idx++, strDeviceId);
 				pst.setString(idx++, strDeviceOs);
-				pst.setString(idx++, strMacAddress);
 				pst.executeUpdate();
 			}
 			pst.close();
@@ -376,7 +373,7 @@
 		PreparedStatement pst = null;
 		String strSQL = "insert into device_setting(device_id, setting_type, action) values (?,?,?)";
 
-		if (strType != "language" || 0 != nAction) {
+		if (strType != "language" || 1 < nAction || 0 > nAction) {
 			return ERR_INVALID_PARAMETER;
 		}
 		if (!StringUtility.isValid(strDeviceId)) {
@@ -411,7 +408,7 @@
 		PreparedStatement pst = null;
 		String strSQL = "update device_setting set action = ? where device_id =? and setting_type = ?";
 
-		if (strType != "language" || 0 != nAction) {
+		if (strType != "language"|| 1 < nAction || 0 > nAction) {
 			return ERR_INVALID_PARAMETER;
 		}
 		if (!StringUtility.isValid(strDeviceId)) {
@@ -620,7 +617,7 @@
 		int nCount = 0;
 		Connection conn = null;
 		PreparedStatement pst = null;
-		String strSQL = "insert into routine_setting(device_id, routine_type, title, start_time, repeat)values(?,?,?,?,?)"; 
+		String strSQL = "insert into routine_setting(device_id, routine_type, title, start_time, `repeat`)values(?,?,?,?,?)"; 
 
 		if (strType != "brush teeth" || 1 < nRepeat || 0 > nRepeat) { 
 			return ERR_INVALID_PARAMETER;
@@ -640,6 +637,7 @@
 				pst.setString(idx++, strTitle);
 				pst.setString(idx++, strTime);
 				pst.setInt(idx++, nRepeat);
+				System.out.println(pst.toString());
 				pst.executeUpdate();
 			}
 			pst.close();

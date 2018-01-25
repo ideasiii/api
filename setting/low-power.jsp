@@ -1,4 +1,5 @@
-<%@include file="../api_common.jsp"%>
+<%@ include file="../api_common.jsp"%>
+<%@ include file="../response_generator.jsp"%>
 
 <%@ page import="org.json.JSONObject"%>
 
@@ -7,16 +8,14 @@
         int nCount = 0;
         Connection conn = null;
         PreparedStatement pst = null;
-        String strSQL = "insert into device_setting(device_id, setting_type, action) values (?,?,?)";
+        String strSQL = "INSERT INTO device_setting(device_id, setting_type, action) VALUES (?,?,?)";
     
-        if (strType != "battery" || 1 < nAction || 0 > nAction) {
+        if (strType != "battery" || 1 < nAction || 0 > nAction 
+        		|| !StringUtility.isValid(strDeviceId)) {
             return ERR_INVALID_PARAMETER;
         }
-        if (!StringUtility.isValid(strDeviceId)) {
-            return ERR_INVALID_PARAMETER;
-        }
+        
         try {
-    
             conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
     
             if (null != conn) {
@@ -26,15 +25,16 @@
                 pst.setString(idx++, strType);
                 pst.setInt(idx++, nAction);
                 pst.executeUpdate();
+                pst.close();
             }
-            pst.close();
-            closeConn(conn);
-            
+
+            closeConn(conn);            
         } catch (Exception e) {
             e.printStackTrace();
             Logs.showTrace(e.toString());
             return ERR_EXCEPTION;
         }
+        
         return ERR_SUCCESS;
     }
 
@@ -42,16 +42,14 @@
 	    int nCount = 0;
 	    Connection conn = null;
 	    PreparedStatement pst = null;
-	    String strSQL = "update device_setting set action = ? where device_id =? and setting_type = ?";
+	    String strSQL = "UPDATE device_setting SET action = ? WHERE device_id =? AND setting_type = ?";
 	
-	    if (strType != "battery" || 1 < nAction || 0 > nAction) {
+	    if (strType != "battery" || 1 < nAction || 0 > nAction
+	    		|| !StringUtility.isValid(strDeviceId)) {
 	        return ERR_INVALID_PARAMETER;
 	    }
-	    if (!StringUtility.isValid(strDeviceId)) {
-	        return ERR_INVALID_PARAMETER;
-	    }
+	    
 	    try {
-	
 	        conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 	
 	        if (null != conn) {
@@ -61,15 +59,16 @@
 	            pst.setString(idx++, strDeviceId);
 	            pst.setString(idx++, strType);
 	            pst.executeUpdate();
+	            pst.close();
 	        }
-	        pst.close();
-	        closeConn(conn);
 	        
+	        closeConn(conn);
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        Logs.showTrace(e.toString());
 	        return ERR_EXCEPTION;
 	    }
+	    
 	    return ERR_SUCCESS;
 	}
 %>
@@ -78,166 +77,101 @@
 	final String strDeviceId = request.getParameter("device_id");
 	final String strType = "battery";
 	String strAction = request.getParameter("action");
-	boolean bSuccess = false;
-	String strError = null;
-	String strMessage = null;
 	DeviceData deviData = new DeviceData();
 	DeviceSetData deviSetData = new DeviceSetData();
+    JSONObject jobj;
+    
+    // TODO check "device_id" parameter exists
+    
+    // TODO check if "action" parameter exists and within range
+    // if does not exist
+    // jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM,
+    //                "Required parameter missing.");
+    
+    if (!isInteger(strAction)) {
+        Logs.showTrace("********error*********strAction: " + strAction);
+        jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE,
+                 "Invalid action.");
+        out.println(jobj.toString());
+        return;
+    }
+    
+	int nAction = Integer.parseInt(strAction.trim());
+	int nCountDevice = queryDevice(strDeviceId, deviData);
 
-	int nAction = -1;
-	if (strAction != null && !strAction.trim().isEmpty()) {
+	if (0 < nCountDevice) {
+		// Device exists
 
-		try {
-			nAction = Integer.parseInt(strAction.trim());
-		} catch (Exception e) {
-			strError = "ER0220";
-			strMessage = "Invalid input.";
+		int nCount = querySetting(strDeviceId, strType, deviSetData);
 
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-			jobj.put("error", strError);
-			jobj.put("message", strMessage);
+		if (0 < nCount) {
+			//setting exists, do update
+			int nUpdate = updateBattery(strDeviceId, strType, nAction);
 
-			Logs.showTrace("********error*********nAction: " + nAction + " strAction: " + strAction);
-			out.println(jobj.toString());
-			return;
-		}
+			if (0 < nUpdate) {
+				jobj = new JSONObject();
+				jobj.put("success", true);
 
-		int nCountDevice = queryDevice(strDeviceId, deviData);
-
-		if (0 < nCountDevice) {
-			//Device exist
-
-			int nCount = querySetting(strDeviceId, strType, deviSetData);
-
-			if (0 < nCount && -1 < nAction) {
-				//setting exist
-				int nUpdate = 0;
-
-				// update battery setting 
-				nUpdate = updateBattery(strDeviceId, strType, nAction);
-
-				if (0 < nUpdate) {
-					bSuccess = true;
-
-					JSONObject jobj = new JSONObject();
-					jobj.put("success", bSuccess);
-
-					Logs.showTrace("**********************nUpdate: " + nUpdate);
-					out.println(jobj.toString());
-				} else {
-
-					switch (nUpdate) {
-					case 0:
-						strError = "ER0500";
-						strMessage = "Internal server error.";
-						break;
-					case -1:
-						strError = "ER0500";
-						strMessage = "Internal server error.";
-						break;
-					case -2:
-						strError = "ER0220";
-						strMessage = "Invalid input.";
-						break;
-					}
-
-					JSONObject jobj = new JSONObject();
-					jobj.put("success", bSuccess);
-					jobj.put("error", strError);
-					jobj.put("message", strMessage);
-
-					Logs.showTrace("********error*********nUpdate: " + nUpdate);
-					out.println(jobj.toString());
-				}
-
+				Logs.showTrace("**********************nUpdate: " + nUpdate);
 			} else {
-				//setting not found
-				int nInsert = 0;
+				switch (nUpdate) {
+	            case ERR_FAIL:
+	            case ERR_EXCEPTION:
+	                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+	                break;
+	            case ERR_INVALID_PARAMETER:
+	                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
+	                break;
+	            default:
+	                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
+	            }
 
-				//insert battery setting
-				nInsert = insertBattery(strDeviceId, strType, nAction);
-
-				if (0 < nInsert && -1 < nAction) {
-					bSuccess = true;
-
-					JSONObject jobj = new JSONObject();
-					jobj.put("success", bSuccess);
-
-					Logs.showTrace("**********************nInsert: " + nInsert);
-					out.println(jobj.toString());
-				} else {
-
-					switch (nInsert) {
-					case 0:
-						strError = "ER0500";
-						strMessage = "Internal server error.";
-						break;
-					case -1:
-						strError = "ER0500";
-						strMessage = "Internal server error.";
-						break;
-					case -2:
-						strError = "ER0220";
-						strMessage = "Invalid input.";
-						break;
-					}
-
-					JSONObject jobj = new JSONObject();
-					jobj.put("success", bSuccess);
-					jobj.put("error", strError);
-					jobj.put("message", strMessage);
-
-					Logs.showTrace("********error*********nInsert: " + nInsert + "***nAction: " + nAction
-							+ " id: " + strDeviceId);
-					out.println(jobj.toString());
-				}
+				Logs.showTrace("********error*********nUpdate: " + nUpdate);
 			}
 		} else {
-			//Device not found
-			switch (nCountDevice) {
-			case 0:
-				strError = "ER0100";
-				strMessage = "device_id not found.";
-				break;
-			case -1:
-				strError = "ER0500";
-				strMessage = "Internal server error.";
-				break;
-			case -2:
-				strError = "ER0220";
-				strMessage = "Invalid device_id.";
-				break;
+			//setting not found, insert setting
+			int nInsert = insertBattery(strDeviceId, strType, nAction);
+
+			if (0 < nInsert) {
+				jobj = new JSONObject();
+				jobj.put("success", true);
+
+				Logs.showTrace("**********************nInsert: " + nInsert);
+			} else {
+				switch (nInsert) {
+		        case ERR_FAIL:
+		        case ERR_EXCEPTION:
+		            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+		            break;
+		        case ERR_INVALID_PARAMETER:
+		            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
+		            break;
+		        default:
+		            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
+				}
+
+				Logs.showTrace("********error*********nInsert: " + nInsert + "***nAction: " + nAction
+						+ " id: " + strDeviceId);
 			}
-
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-			jobj.put("error", strError);
-			jobj.put("message", strMessage);
-
-			Logs.showTrace("********error*********nCountDevice: " + nCountDevice);
-			out.println(jobj.toString());
 		}
-
 	} else {
-		if (strAction == null) {
-			strError = "ER0120";
-			strMessage = "Required parameter missing.";
-		} else {
-			if (strAction.trim().isEmpty()) {
-				strError = "ER0220";
-				strMessage = "Invalid action.";
-			} else {
-				strError = "ER0220";
-				strMessage = "Invalid input.";
-			}
-		}
-
-		JSONObject jobj = new JSONObject();
-		jobj.put("success", bSuccess);
-		jobj.put("error", strError);
-		jobj.put("message", strMessage);
-
-		out.println(jobj.toString());
-	} // invalid Action
+		// Device not found
+		switch (nCountDevice) {
+        case ERR_FAIL:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND, "device_id not found.");
+            break;
+        case ERR_EXCEPTION:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+            break;
+        case ERR_INVALID_PARAMETER:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
+            break;
+        default:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
+        }
+		
+		Logs.showTrace("********error*********nCountDevice: " + nCountDevice);
+	}
+	
+	out.println(jobj.toString());
 %>

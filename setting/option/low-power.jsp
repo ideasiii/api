@@ -1,54 +1,44 @@
+<%@ include file="../../api_common.jsp" %>
+<%@ include file="../../response_generator.jsp" %>
+
 <%@ page import="org.json.JSONObject"%>
-
-
-<%@include file="../../api_common.jsp"%>
 
 <%
 	final String strDeviceId = request.getParameter("device_id");
 	final String strType = "battery";
-	boolean bSuccess = false;
-	String strError = null;
-	String strMessage = null;
 	DeviceSetData deviSetData = new DeviceSetData();
+	JSONObject jobj;
+	
+	// TODO check required param in "request"
 	
 	int nCount = querySetting(strDeviceId, strType, deviSetData);
 	
 	if (0 < nCount) {
-		//setting exist
-		bSuccess = true;
-		
-		JSONObject jobj = new JSONObject();
-		jobj.put("success", bSuccess);
+		// setting exists
+		jobj = new JSONObject();
+		jobj.put("success", true);
 		jobj.put("result", deviSetData.action);
 
 		Logs.showTrace("**********************nCount: " + nCount + " action: " + deviSetData.action);
-		out.println(jobj.toString());
-	
 	} else {
-		//setting not found
-		switch (nCount)
-		{
-		case 0:
-			strError = "ER0100";
-			strMessage = "device_id not found.";
+		// setting not found
+		switch (nCount) {
+		case ERR_FAIL:
+			jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND,
+	                "device_id not found.");
 			break;
-		case -1:
-			strError = "ER0500";
-			strMessage = "Internal server error.";
+		case ERR_EXCEPTION:
+		    jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
 			break;
-		case -2:
-			strError = "ER0220";
-			strMessage = "Invalid input.";
+		case ERR_INVALID_PARAMETER:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
 			break;
+		default:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
 		}
-			
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-			jobj.put("error", strError);
-			jobj.put("message", strMessage);
-			
-			Logs.showTrace("********error*********nCount: " + nCount);
-			out.println(jobj.toString());
+		
+		Logs.showTrace("********error*********nCount: " + nCount);
 	}
 	
+	out.println(jobj.toString());
 %>

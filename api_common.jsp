@@ -192,7 +192,6 @@
 		}
 
 		try {
-
 			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
@@ -260,47 +259,7 @@
 		}
 		return nCount;
 	}
-     	
-	 /****    reset    ****/
-	
-	public int deleteSetting(final String strDeviceId) {
-		int nCount = 0;
-		Connection conn = null;
-		PreparedStatement pst = null;
-		String strSQL = null;
-		
-		if (!StringUtility.isValid(strDeviceId)) {
-			return ERR_INVALID_PARAMETER;
-		}
-		try {
-			
-			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
-
-			if (null != conn) {
-				
-				strSQL = "delete from device_setting where device_id = ?";
-				pst = conn.prepareStatement(strSQL);
-				int idx = 1;
-				pst.setString(idx++, strDeviceId);
-				pst.executeUpdate();
-				
-				strSQL = "delete from routine_setting where device_id = ?";
-				pst = conn.prepareStatement(strSQL);
-				idx = 1;
-				pst.setString(idx++, strDeviceId);
-				pst.executeUpdate();
-			}
-			pst.close();
-			closeConn(conn);
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-			Logs.showTrace(e.toString());
-			return ERR_EXCEPTION;
-		}
-	return ERR_SUCCESS;
-	 }
-	
+    	
 	/** ROUTINE SETTING API **/
 
 	public int queryRoutineList(final String strDeviceId, final String strType,  ArrayList<RoutineData> listRoutine) {
@@ -473,5 +432,9 @@
 			return ERR_EXCEPTION;
 		}
 		return ERR_SUCCESS;
+	}
+	
+	public static boolean isInteger(String s) {
+		return s == null ? false : s.matches("[-+]?[0-9]+");
 	}
 %>
