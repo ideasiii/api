@@ -6,51 +6,53 @@
 <%! // methods used ONLY within this file
 
     public int deleteSetting(final String strDeviceId) {
-        int nCount = 0;
-        Connection conn = null;
-        PreparedStatement pst = null;
-        String strSQL = null;
-        
         if (!StringUtility.isValid(strDeviceId)) {
             return ERR_INVALID_PARAMETER;
         }
-        
-        try {            
+
+        int nCount = 0;
+        int ret;
+        Connection conn = null;
+        PreparedStatement pst = null;
+
+        try {
             conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
             if (null != conn) {
-                strSQL = "DELETE FROM device_setting WHERE device_id = ?";
-                pst = conn.prepareStatement(strSQL);
+                pst = conn.prepareStatement("DELETE FROM device_setting WHERE device_id = ?");
                 pst.setString(1, strDeviceId);
                 pst.executeUpdate();
                 pst.close();
-                
-                strSQL = "DELETE FROM routine_setting WHERE device_id = ?";
-                pst = conn.prepareStatement(strSQL);
+
+                pst = conn.prepareStatement("DELETE FROM routine_setting WHERE device_id = ?");
                 pst.setString(1, strDeviceId);
                 pst.executeUpdate();
                 pst.close();
             }
-            
-            closeConn(conn);
+
+            ret = ERR_SUCCESS;
         } catch (Exception e) {
             e.printStackTrace();
             Logs.showTrace(e.toString());
-            return ERR_EXCEPTION;
+            ret = ERR_EXCEPTION;
+        } finally {
+        	if (conn != null) {
+        		closeConn(conn);
+        	}
+
+        	return ret;
         }
-        
-        return ERR_SUCCESS;
-     }
+    }
 %>
 
 <%
 	final String strDeviceId = request.getParameter("device_id");
 
 	// TODO check if device_id exists in "request"
-	
+
 	DeviceData deviData = new DeviceData();
 	JSONObject jobj;
-	
+
 	int nCount = queryDevice(strDeviceId, deviData);
     Logs.showTrace("**********************nCount: " + nCount);
 
@@ -94,7 +96,7 @@
 		}
 
 		Logs.showTrace("********error*********nCount: " + nCount);
-	}	
-	
+	}
+
 	out.println(jobj.toString());
 %>

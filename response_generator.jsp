@@ -29,16 +29,16 @@ public static class ApiResponse {
 
 	// 輸入的參數內容中，欄位名稱不存在 (???)
 	//public static final String RESP_TYPE_ = "ER0230";
-	
+
 	public static JSONObject getErrorResponse(String status) {
 	    return getErrorResponse(status, null);
 	}
-	
+
 	public static JSONObject getErrorResponse(String status, String message) {
 		JSONObject ret = new JSONObject();
 		ret.put("success", false);
         ret.put("error", status);
-        
+
         if (message == null) {
         	// fill with canned message
         	if (status == null) {
@@ -55,11 +55,11 @@ public static class ApiResponse {
                 message = "Internal server error.";
             } else {
                 message = "Undefined error type.";
-            }	
+            }
         }
-        
+
         ret.put("message", message);
-        return ret;		
+        return ret;
 	}
 }
 
