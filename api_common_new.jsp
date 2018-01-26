@@ -5,7 +5,7 @@
 <%@ page import="java.util.ArrayList"%>
 <%@ page import="java.util.Arrays"%>
 <%@ page import="more.Logs"%>
-<%@ page import="more.StringUtility"%> 
+<%@ page import="more.StringUtility"%>
 <%@ page import="java.util.regex.Matcher"%>
 <%@ page import="java.util.regex.Pattern"%>
 
@@ -15,13 +15,13 @@
 	public final static int ERR_EXCEPTION = -1;
 	public final static int ERR_INVALID_PARAMETER = -2;
 	public final static int ERR_CONFLICT = -3;
-	
+
 	public class Common {
 
 
 		final public static String DB_URL = "jdbc:mysql://52.68.108.37:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
-		//wins IP version 
-		
+		//wins IP version
+
 	/*  final public static String DB_URL = "jdbc:mysql://10.0.20.130:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
 		*/
 		final public static String DB_USER = "more";
@@ -131,7 +131,7 @@
 		Connection conn = null;
 
 		try {
-			//load mysql Driver 
+			//load mysql Driver
 			Class.forName("com.mysql.jdbc.Driver");//.newInstance();
 			//connect database
 			conn = DriverManager.getConnection(strDB, strUser, strPwd);
@@ -484,7 +484,7 @@
 		Connection conn = null;
 		String strSQL = "select * from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='"
 				+ strType + "'";
-		
+
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
 		}
@@ -504,7 +504,7 @@
 					routineData.title = rs.getString("title");
 					routineData.start_time = rs.getString("start_time");
 					routineData.repeat = rs.getInt("repeat");
-					routineData.meta_id = rs.getInt("meta_id");  
+					routineData.meta_id = rs.getInt("meta_id");
 					listRoutine.add(routineData);
 					//System.out.println(listRoutine.get(0).routine_id);
 				}
@@ -521,13 +521,13 @@
 		}
 		return nCount;
 	}
-	
+
 	public int queryRoutine(final String strDeviceId, final String strType, final String strTime, ArrayList<RoutineData> listRoutine) {
 		int nCount = 0;
 		Connection conn = null;
 		String strSQL = "select * from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='"
 				+ strType + "' and start_time ='" + strTime + "'";
-		
+
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
 		}
@@ -547,7 +547,7 @@
 					routineData.title = rs.getString("title");
 					routineData.start_time = rs.getString("start_time");
 					routineData.repeat = rs.getInt("repeat");
-					routineData.meta_id = rs.getInt("meta_id");  
+					routineData.meta_id = rs.getInt("meta_id");
 					listRoutine.add(routineData);
 				}
 				rs.close();
@@ -562,13 +562,13 @@
 		}
 		return nCount;
 	}
-	
+
 	public int queryRoutineID(final String strDeviceId, final String strType, final String strTime) {
 		int nRoutineId = 0;
 		Connection conn = null;
 		String strSQL = "select routine_id from routine_setting where device_id = '" + strDeviceId + "' and routine_type ='"
 				+ strType + "' and start_time ='" + strTime + "'";
-		
+
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
 		}
@@ -595,31 +595,31 @@
 		}
 		return nRoutineId;
 	}
-	
-	
-	public static boolean checkTime(String str){  
-	    boolean flag = false;  
-	    try {  
-	        String check = "(?:[01]\\d|2[0123]):(?:[012345]\\d):(?:[012345]\\d)";   
-	        Pattern regex = Pattern.compile(check);  
-	        Matcher matcher = regex.matcher(str);  
-	        flag = matcher.matches();  
-	    } catch (Exception e) {  
-	        e.printStackTrace();  
-	        flag = false;  
-	    }  
-	    return flag;  
-	}  
-	 
+
+
+	public static boolean checkTime(String str){
+	    boolean flag = false;
+	    try {
+	        String check = "(?:[01]\\d|2[0123]):(?:[012345]\\d):(?:[012345]\\d)";
+	        Pattern regex = Pattern.compile(check);
+	        Matcher matcher = regex.matcher(str);
+	        flag = matcher.matches();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        flag = false;
+	    }
+	    return flag;
+	}
+
 	/****    Brush Teeth    ****/
 
 	public int insertBrush(final String strDeviceId, final String strType, final String strTitle, final String strTime, final int nRepeat) {
 		int nCount = 0;
 		Connection conn = null;
 		PreparedStatement pst = null;
-		String strSQL = "insert into routine_setting(device_id, routine_type, title, start_time, `repeat`)values(?,?,?,?,?)"; 
+		String strSQL = "insert into routine_setting(device_id, routine_type, title, start_time, `repeat`)values(?,?,?,?,?)";
 
-		if (strType != "brush teeth" || 1 < nRepeat || 0 > nRepeat) { 
+		if (strType != "brush teeth" || 1 < nRepeat || 0 > nRepeat) {
 			return ERR_INVALID_PARAMETER;
 		}
 		if (!StringUtility.isValid(strDeviceId)) {
@@ -650,12 +650,12 @@
 		}
 		return ERR_SUCCESS;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
+
 %>

@@ -61,6 +61,12 @@ public static class ApiResponse {
         ret.put("message", message);
         return ret;
 	}
+	
+	public static JSONObject getSuccessResponseTemplate() {
+		JSONObject ret = new JSONObject();
+        ret.put("success", true);
+        return ret;
+	}
 }
 
 %>

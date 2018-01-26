@@ -6,21 +6,25 @@
 <%! // methods shared among /setting/option/___.jsp pages
 
 public JSONObject processRequest(HttpServletRequest request, String strType) {
+    if (!request.getParameterMap().containsKey("device_id")) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM);
+    }
+    
     final String strDeviceId = request.getParameter("device_id");
+
+    if (!isValidDeviceId(strDeviceId)) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
+    }
+    
     DeviceSetData deviSetData = new DeviceSetData();
     JSONObject jobj;
-
-    // TODO check required param in "request"
 
     int nCount = querySetting(strDeviceId, strType, deviSetData);
 
     if (0 < nCount) {
         // setting exists
-        jobj = new JSONObject();
-        jobj.put("success", true);
+        jobj = ApiResponse.getSuccessResponseTemplate();
         jobj.put("result", deviSetData.action);
-
-        Logs.showTrace("**********************nCount: " + nCount + " action: " + deviSetData.action);
     } else {
         // setting not found
         switch (nCount) {

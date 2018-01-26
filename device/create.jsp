@@ -3,79 +3,66 @@
 
 <%@ page import="org.json.JSONObject"%>
 
+<%
+    JSONObject jobj = processRequest(request);
+    out.println(jobj.toString());
+%>
+
 <%! // methods used ONLY within this file
 
-	public int insertDevice(final String strDeviceId, final String strDeviceOs) {
-	    if (!StringUtility.isValid(strDeviceId)) {
-	        return ERR_INVALID_PARAMETER;
-	    }
+private JSONObject processRequest(HttpServletRequest request) {
+    if (!request.getParameterMap().containsKey("device_id")
+            || !request.getParameterMap().containsKey("device_os")) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM);
+    }
+    
+    final String strDeviceId = request.getParameter("device_id");
+    final String strDeviceOs = request.getParameter("device_os");
 
-	    try {
-	        DeviceData deviData = new DeviceData();
-	        int nCount = queryDevice(strDeviceId, deviData);
-	        if (0 < nCount) {
-	            return ERR_CONFLICT;
-	        }
+    if (!isValidDeviceId(strDeviceId)) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
+    } else if (!isNotEmptyString(strDeviceOs)) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_os.");
+    }
+    
+    Logs.showTrace("********" + strDeviceId + " os: " + strDeviceOs);
+    JSONObject jobj;
 
-	        Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+    int nInsert = insertDevice(strDeviceId, strDeviceOs);
 
-	        if (null != conn) {
-	        	PreparedStatement pst = conn.prepareStatement(
-	        			"INSERT INTO device_list(device_id, device_os) VALUES (?,?)");
-	            pst.setString(1, strDeviceId);
-	            pst.setString(2, strDeviceOs);
-	            pst.executeUpdate();
-	            pst.close();
-	        }
-
-	        closeConn(conn);
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        Logs.showTrace(e.toString());
-	        return ERR_EXCEPTION;
-	    }
-
-	    return ERR_SUCCESS;
-	}
-%>
-
-<%
-	final String strDeviceId = request.getParameter("device_id");
-	final String strDeviceOs = request.getParameter("device_os");
-
-	// TODO check if device_id and device_os both exists
-
-	Logs.showTrace("********" + strDeviceId + " os: " + strDeviceOs);
-	JSONObject jobj;
-
-	int nInsert = insertDevice(strDeviceId, strDeviceOs);
-
-	if (0 < nInsert) {
-		jobj = new JSONObject();
-		jobj.put("success", true);
-
-		Logs.showTrace("**********************nInsert: " + nInsert);
-	} else {
-		switch (nInsert) {
-		case ERR_FAIL:
-		case ERR_EXCEPTION:
-		    jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-			break;
-		case ERR_INVALID_PARAMETER:
-			jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
-			break;
-		case ERR_CONFLICT:
-			jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_CONFLICTS_WITH_EXISTING_DATA,
-	                "device_id conflict.");
-			break;
-		default:
+    if (0 < nInsert) {
+        jobj = ApiResponse.getSuccessResponseTemplate();
+    } else {
+        switch (nInsert) {
+        case ERR_FAIL:
+        case ERR_EXCEPTION:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+            break;
+        case ERR_INVALID_PARAMETER:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
+            break;
+        case ERR_CONFLICT:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_CONFLICTS_WITH_EXISTING_DATA,
+                    "device_id conflict.");
+            break;
+        default:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
-		}
+        }
+    }
+    
+    return jobj;
+}
 
-		Logs.showTrace("********error*********nInsert: " + nInsert);
-
+private int insertDevice(final String strDeviceId, final String strDeviceOs) {
+	DeviceData deviData = new DeviceData();
+	int nCount = queryDevice(strDeviceId, deviData);
+	
+	if (0 < nCount) {
+	    return ERR_CONFLICT;
 	}
 
-	out.println(jobj.toString());
+	return insertUpdateDelete(
+	        "INSERT INTO device_list(device_id, device_os) VALUES (?,?)",
+	        new Object[]{strDeviceId, strDeviceOs});
+}
 %>
-

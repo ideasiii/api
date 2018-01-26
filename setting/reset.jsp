@@ -5,98 +5,89 @@
 
 <%! // methods used ONLY within this file
 
-    public int deleteSetting(final String strDeviceId) {
-        if (!StringUtility.isValid(strDeviceId)) {
-            return ERR_INVALID_PARAMETER;
-        }
+private JSONObject processRequest(HttpServletRequest request) {
+	if (!request.getParameterMap().containsKey("device_id")) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM);
+    }
+    
+    final String strDeviceId = request.getParameter("device_id");
 
-        int nCount = 0;
-        int ret;
-        Connection conn = null;
-        PreparedStatement pst = null;
+    if (!isValidDeviceId(strDeviceId)) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
+    }
 
-        try {
-            conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+    DeviceData deviData = new DeviceData();
+    JSONObject jobj;
 
-            if (null != conn) {
-                pst = conn.prepareStatement("DELETE FROM device_setting WHERE device_id = ?");
-                pst.setString(1, strDeviceId);
-                pst.executeUpdate();
-                pst.close();
+    int nCount = queryDevice(strDeviceId, deviData);
+    Logs.showTrace("**********************nCount: " + nCount);
 
-                pst = conn.prepareStatement("DELETE FROM routine_setting WHERE device_id = ?");
-                pst.setString(1, strDeviceId);
-                pst.executeUpdate();
-                pst.close();
+    if (0 < nCount) {
+        // Device record exists
+        int nDelete = deleteSetting(strDeviceId);
+        if (0 < nDelete) {
+            jobj = ApiResponse.getSuccessResponseTemplate();
+        } else {
+            switch (nDelete) {
+            case ERR_FAIL:
+            case ERR_EXCEPTION:
+                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+                break;
+            case ERR_INVALID_PARAMETER:
+                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
+                break;
+            default:
+                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
             }
-
-            ret = ERR_SUCCESS;
-        } catch (Exception e) {
-            e.printStackTrace();
-            Logs.showTrace(e.toString());
-            ret = ERR_EXCEPTION;
-        } finally {
-        	if (conn != null) {
-        		closeConn(conn);
-        	}
-
-        	return ret;
+        }
+    } else {
+        // Device not found
+        switch (nCount) {
+            case ERR_FAIL:
+                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND, "device_id not found.");
+                break;
+            case ERR_EXCEPTION:
+                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+                break;
+            case ERR_INVALID_PARAMETER:
+                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
+                break;
+            default:
+                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
         }
     }
+    
+    return jobj;
+}
+
+public int deleteSetting(final String strDeviceId) {
+    if (!StringUtility.isValid(strDeviceId)) {
+        return ERR_INVALID_PARAMETER;
+    }
+
+    try {
+    	Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+
+        if (null != conn) {
+        	insertUpdateDelete(conn,
+        			"DELETE FROM device_setting WHERE device_id = ?",
+                    new Object[]{strDeviceId});
+        	
+        	insertUpdateDelete(conn,
+        			"DELETE FROM routine_setting WHERE device_id = ?",
+                    new Object[]{strDeviceId});
+        }
+
+        closeConn(conn);
+        return ERR_SUCCESS;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ERR_EXCEPTION;
+    }
+}
 %>
 
 <%
-	final String strDeviceId = request.getParameter("device_id");
-
-	// TODO check if device_id exists in "request"
-
-	DeviceData deviData = new DeviceData();
-	JSONObject jobj;
-
-	int nCount = queryDevice(strDeviceId, deviData);
-    Logs.showTrace("**********************nCount: " + nCount);
-
-	if (0 < nCount) {
-		// Device record exists
-		int nDelete = deleteSetting(strDeviceId);
-		if (0 < nDelete) {
-			jobj = new JSONObject();
-			jobj.put("success", true);
-
-			Logs.showTrace("**********************nDelete: " + nDelete);
-		} else {
-			switch (nDelete) {
-			case ERR_FAIL:
-			case ERR_EXCEPTION:
-				jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-	            break;
-			case ERR_INVALID_PARAMETER:
-	            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
-				break;
-	        default:
-	            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
-			}
-
-			Logs.showTrace("********error*********nDelete: " + nDelete);
-		}
-	} else {
-		// Device not found
-		switch (nCount) {
-			case ERR_FAIL:
-				jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND, "device_id not found.");
-                break;
-			case ERR_EXCEPTION:
-				jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-	            break;
-			case ERR_INVALID_PARAMETER:
-				jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
-				break;
-	        default:
-	            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
-		}
-
-		Logs.showTrace("********error*********nCount: " + nCount);
-	}
-
+	JSONObject jobj = processRequest(request);
 	out.println(jobj.toString());
 %>

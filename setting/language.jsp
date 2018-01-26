@@ -7,6 +7,6 @@ private boolean actionIsInRange(int action) {
 %>
 
 <%
-    JSONObject jobj = processRequest(request, "language");
+    JSONObject jobj = processPutSettingRequest(request, "language");
 	out.println(jobj.toString());
 %>

@@ -7,6 +7,6 @@ private boolean actionIsInRange(int action) {
 %>
 
 <%
-    JSONObject jobj = processRequest(request, "battery");
-	out.println(jobj.toString());
+    JSONObject jobj = processPutSettingRequest(request, "battery");
+    out.println(jobj.toString());
 %>

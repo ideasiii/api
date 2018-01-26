@@ -165,21 +165,22 @@
 	/** Device Manager API **/
 
 	public int queryDevice(final String strDeviceId, DeviceData deviData) {
-		int nCount = 0;
-		Connection conn = null;
-		String strSQL = "SELECT * FROM device_list WHERE device_id = '" + strDeviceId + "';";
-
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
 		}
-
+        
+		int nCount = 0;
+        Connection conn = null;
+        PreparedStatement pst = null;
+        
 		try {
 			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
-			if (null != conn) {
-				Statement stat = conn.createStatement();
-				ResultSet rs = stat.executeQuery(strSQL);
-
+			if (conn != null) {
+				pst = conn.prepareStatement("SELECT * FROM device_list WHERE device_id = ?");
+				pst.setString(1, strDeviceId);
+				ResultSet rs = pst.executeQuery();
+	
 				while (rs.next()) {
 					++nCount;
 					deviData.device_id = rs.getString("device_id");
@@ -187,11 +188,12 @@
 					deviData.create_time = rs.getString("create_time");
 					deviData.update_time = rs.getString("update_time");
 				}
+				
 				rs.close();
-				stat.close();
+				pst.close();
 			}
+			
 			closeConn(conn);
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			Logs.showTrace(e.toString());
@@ -204,22 +206,23 @@
 
 	/** DEVICE SETTING API **/
 
-     public int querySetting(final String strDeviceId, final String strType, DeviceSetData deviSetData) {
-		int nCount = 0;
+    public int querySetting(final String strDeviceId, final String strType, DeviceSetData deviSetData) {
+        if (!StringUtility.isValid(strDeviceId)) {
+            return ERR_INVALID_PARAMETER;
+        }
+        
+        int nCount = 0;
 		Connection conn = null;
-		String strSQL = "SELECT * FROM device_setting WHERE device_id = '" + strDeviceId + "' AND setting_type ='" + strType + "'";
 
-		if (!StringUtility.isValid(strDeviceId)) {
-			return ERR_INVALID_PARAMETER;
-		}
 		try {
-
 			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
-				Statement stat = conn.createStatement();
-				ResultSet rs = stat.executeQuery(strSQL);
-
+                PreparedStatement pst = conn.prepareStatement("SELECT * FROM device_setting WHERE device_id = ? AND setting_type = ?");
+                pst.setString(1, strDeviceId);
+                pst.setString(2, strType);
+                ResultSet rs = pst.executeQuery();
+                
 				while (rs.next()) {
 					++nCount;
 					deviSetData.cmmd_id = rs.getInt("cmmd_id");
@@ -230,15 +233,16 @@
 					deviSetData.update_time = rs.getString("update_time");
 				}
 				rs.close();
-				stat.close();
+				pst.close();
 			}
+			
 			closeConn(conn);
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			Logs.showTrace(e.toString());
 			return ERR_EXCEPTION;
 		}
+		
 		return nCount;
 	}
 
@@ -253,8 +257,8 @@
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
 		}
+		
 		try {
-
 			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
@@ -277,13 +281,14 @@
 				rs.close();
 				stat.close();
 			}
+		
 			closeConn(conn);
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			Logs.showTrace(e.toString());
 			return ERR_EXCEPTION;
 		}
+		
 		return nCount;
 	}
 
@@ -296,8 +301,8 @@
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
 		}
+		
 		try {
-
 			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
@@ -318,13 +323,14 @@
 				rs.close();
 				stat.close();
 			}
+			
 			closeConn(conn);
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			Logs.showTrace(e.toString());
 			return ERR_EXCEPTION;
 		}
+		
 		return nCount;
 	}
 
@@ -337,8 +343,8 @@
 		if (!StringUtility.isValid(strDeviceId)) {
 			return ERR_INVALID_PARAMETER;
 		}
+		
 		try {
-
 			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
 			if (null != conn) {
@@ -351,69 +357,88 @@
 				rs.close();
 				stat.close();
 			}
+			
 			closeConn(conn);
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			Logs.showTrace(e.toString());
 			return ERR_EXCEPTION;
 		}
+		
 		return nRoutineId;
 	}
-
-
-	public static boolean checkTime(String str) {
-	    try {
-	        String check = "(?:[01]\\d|2[0123]):(?:[012345]\\d):(?:[012345]\\d)";
-	        Pattern regex = Pattern.compile(check);
-	        Matcher matcher = regex.matcher(str);
-	        return matcher.matches();
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return false;
-	    }
-	}
-
-    public static boolean isInteger(String s) {
-        return s == null ? false : s.matches("[-+]?[0-9]+");
-    }
 
 	/****    Brush Teeth    ****/
 
 	public int insertBrush(final String strDeviceId, final String strType, final String strTitle, final String strTime, final int nRepeat) {
-		int nCount = 0;
-		Connection conn = null;
-		PreparedStatement pst = null;
-		String strSQL = "INSERT INTO routine_setting(device_id, routine_type, title, start_time, `repeat`)VALUES(?,?,?,?,?)";
-
 		if (strType != "brush teeth" || 1 < nRepeat || 0 > nRepeat) {
-			return ERR_INVALID_PARAMETER;
-		}
-		if (!StringUtility.isValid(strDeviceId)) {
-			return ERR_INVALID_PARAMETER;
-		}
-		try {
-			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+	         return ERR_INVALID_PARAMETER;
+	     }
+	     
+	     if (!StringUtility.isValid(strDeviceId)) {
+	         return ERR_INVALID_PARAMETER;
+	     }
 
-			if (null != conn) {
-				pst = conn.prepareStatement(strSQL);
-				int idx = 1;
-				pst.setString(idx++, strDeviceId);
-				pst.setString(idx++, strType);
-				pst.setString(idx++, strTitle);
-				pst.setString(idx++, strTime);
-				pst.setInt(idx++, nRepeat);
-				System.out.println(pst.toString());
-				pst.executeUpdate();
-				pst.close();
-			}
+	    return insertUpdateDelete("INSERT INTO routine_setting(device_id, routine_type, title, start_time, repeat)VALUES(?,?,?,?,?)",
+	    		new Object[]{strDeviceId, strType, strTitle, strTime, Integer.valueOf(nRepeat)});	
+	}
 
-			closeConn(conn);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Logs.showTrace(e.toString());
-			return ERR_EXCEPTION;
-		}
-		return ERR_SUCCESS;
+	
+    /****    Helpers    ****/
+
+    public static boolean checkTime(String str) {
+        return str == null ? false : str.matches("(?:[01]\\d|2[0123]):(?:[012345]\\d):(?:[012345]\\d)");
+    }
+
+    public static boolean isInteger(String s) {
+        return s == null ? false : s.matches("[-+]?[0-9]+");
+    }
+    
+    public static boolean isValidDeviceId(String s) {
+        return StringUtility.isValid(s);
+    }
+    
+    public static boolean isNotEmptyString(String s) {
+    	return s != null && s.length() > 0;
+    }
+	
+    public int insertUpdateDelete(final String template, Object[] params) {
+        return insertUpdateDelete(null, template, params);
+    }
+
+	public int insertUpdateDelete(Connection conn, final String template, Object[] params) {
+	    PreparedStatement pst = null;
+
+	    try {
+	    	if (conn == null) {
+    		   conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+   		    }
+
+            pst = conn.prepareStatement(template);
+            int paramIndex = 1;
+            
+            for (int i = 0; i < params.length; i++) {
+            	Object param = params[i];
+            	
+            	if (params[i] instanceof Integer) {
+                    pst.setInt(paramIndex++, ((Integer)param).intValue());
+            	} else if (params[i] instanceof Long) {
+                    pst.setLong(paramIndex++, ((Integer)param).longValue());
+                   } else if (params[i] instanceof String) {
+                       pst.setString(paramIndex++, (String)param);
+                   } else {
+                   	throw new IllegalArgumentException(
+                   			"unsupported type of parameter " + param.getClass().getName());
+                   }
+            }
+            pst.executeUpdate();
+            pst.close();
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        Logs.showTrace(e.toString());
+	        return ERR_EXCEPTION;
+	    }
+
+	    return ERR_SUCCESS;
 	}
 %>
