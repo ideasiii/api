@@ -1,65 +1,74 @@
+<%@include file="../../api_common.jsp"%>
+<%@include file="../../response_generator.jsp"%>
+<%@include file="../db_op.jsp"%>
+
 <%@ page import="org.json.JSONObject"%>
 <%@ page import="org.json.JSONArray"%>
 <%@ page import="org.json.JSONException"%>
 
-<%@include file="../../api_common.jsp"%>
-
 <%
-	final String strDeviceId = request.getParameter("device_id");
-	final String strType = "brush teeth";
-	boolean bSuccess = false;
-	String strError = null;
-	String strMessage = null;
-	ArrayList<RoutineData> listRoutine = new ArrayList<RoutineData>();
+	JSONObject jobj = processRequest(request);
+	out.print(jobj.toString());
+%>
 
-	int nCount = queryRoutineList(strDeviceId, strType, listRoutine);
+<%!
+private JSONObject processRequest(HttpServletRequest request) {
+    if (!request.getParameterMap().containsKey("device_id")) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM);
+    }
+
+    final String strDeviceId = request.getParameter("device_id");
+
+    if (!isValidDeviceId(strDeviceId)) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
+    }
+    
+	ArrayList<RoutineData> listRoutine = new ArrayList<RoutineData>();
+    JSONObject jobj;
+    
+	int nCount = queryRoutineList(strDeviceId, "brush teeth", listRoutine);
 
 	if (0 < nCount) {
-		//routine setting exist
+		// routine settings exist
 		Logs.showTrace("**********************listRoutine: " + listRoutine.get(0).device_id);
 
 		JSONArray jsonArray = new JSONArray();
 		for (int i = 0; i < listRoutine.size(); i++) {
-			JSONObject jobj = new JSONObject();
-			jobj.put("routine_id", listRoutine.get(i).routine_id);
-			jobj.put("titled", listRoutine.get(i).title);
-			jobj.put("start_time", listRoutine.get(i).start_time);
-			jobj.put("repeat", listRoutine.get(i).repeat);
-			jsonArray.put(jobj);
+			RoutineData rd = listRoutine.get(i);
+			
+			JSONObject rdJson = new JSONObject();
+			rdJson.put("routine_id", rd.routine_id);
+			rdJson.put("titled", rd.title);
+			rdJson.put("start_time", rd.start_time);
+			rdJson.put("repeat", rd.repeat);
+			
+			jsonArray.put(rdJson);
 		}
 
-		bSuccess = true;
-
-		JSONObject jobjResult = new JSONObject();
-		jobjResult.put("success", bSuccess);
-		jobjResult.put("result", jsonArray);
+        jobj = ApiResponse.getSuccessResponseTemplate();
+        jobj.put("result", jsonArray);
 
 		Logs.showTrace("**********************nCount: " + nCount + " result: " + jsonArray.toString());
-		out.println(jobjResult.toString());
-
 	} else {
-		//routine setting not found
+		// routine setting not found
 		switch (nCount) {
-		case 0:
-			strError = "ER0100";
-			strMessage = "device_id not found.";
+		case ERR_FAIL:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND, 
+            		"device_id not found.");
 			break;
-		case -1:
-			strError = "ER0500";
-			strMessage = "Internal server error.";
+		case ERR_EXCEPTION:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
 			break;
-		case -2:
-			strError = "ER0220";
-			strMessage = "Invalid input.";
+		case ERR_INVALID_PARAMETER:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
 			break;
-		}
-
-		JSONObject jobj = new JSONObject();
-		jobj.put("success", bSuccess);
-		jobj.put("error", strError);
-		jobj.put("message", strMessage);
+		default:
+            jobj = ApiResponse.getUnknownErrorResponse();
+        }
 
 		Logs.showTrace("********error*********nCount: " + nCount);
-		out.println(jobj.toString());
 	}
+	
+	return jobj;
+}
 %>

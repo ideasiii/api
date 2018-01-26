@@ -2,5 +2,5 @@
 
 <%
 	JSONObject jobj = processRequest(request, "battery");
-	out.println(jobj.toString());
+	out.print(jobj.toString());
 %>

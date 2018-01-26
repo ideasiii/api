@@ -17,11 +17,12 @@
 	public final static int ERR_CONFLICT = -3;
 
 	public class Common {
-		final public static String DB_URL = "jdbc:mysql://52.68.108.37:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
-		//wins IP version
-
-	/*	final public static String DB_URL = "jdbc:mysql://10.0.20.130:3306/edubot?useUnicode=true&characterEncoding=UTF-8";
-		*/
+		private static final String DB_IP = "52.68.108.37";
+		
+		// dev environment
+		//private static final DB_IP = "10.0.20.130";
+		
+		final public static String DB_URL = "jdbc:mysql://" + DB_IP + ":3306/edubot?useUnicode=true&characterEncoding=UTF-8&verifyServerCertificate=false";
 		final public static String DB_USER = "more";
 		final public static String DB_PASS = "ideas123!";
 
@@ -68,18 +69,6 @@
 		final public static String UPDATE_TIME = "update_time";
 	}
 
-
-	final public static ArrayList<String> listDeviceField = new ArrayList<String>(Arrays.asList(Common.DEVICE_ID,
-				Common.DEVICE_OS, Common.CREATE_TIME));
-	/*
-		final public static ArrayList<String> listRoutineField = new ArrayList<>(
-				Arrays.asList(Common.ROUTINE_ID, Common.DEVICE_ID, Common.ROUTINE_TYPE, Common.TITLE, Common.START_TIME,
-						Common.REPEAT, Common.META_ID, Common.CREATE_TIME));
-
-		final public static ArrayList<String> listStoryField = new ArrayList<>(
-				Arrays.asList(Common.STORY_ID, Common.STORY_URL, Common.STORY_NAME, Common.CATEGORY, Common.LANGUAGE,
-						Common.TYPE, Common.CREATE_TIME));
-	*/
 	public static class DeviceData {
 		public String device_id;
 		public String device_os;
@@ -132,21 +121,13 @@
 		Connection conn = null;
 
 		try {
-			//load mysql Driver
 			Class.forName("com.mysql.jdbc.Driver");//.newInstance();
-			//connect database
-			conn = DriverManager.getConnection(strDB,strUser,strPwd);
-
-			/*("jdbc:mysql://52.68.108.37:3306/" + strDB + "?user=" + strUser
-					+ "&password=" + strPwd + "&useUnicode=true&characterEncoding=UTF-8");
-*/
-		} catch (SQLException se) {
-			se.printStackTrace();
-			Logs.showTrace("MySQL Exception: " + se.toString());
+			conn = DriverManager.getConnection(strDB, strUser, strPwd);
 		} catch (Exception e) {
 			e.printStackTrace();
 			Logs.showTrace(e.toString());
 		}
+		
 		return conn;
 	}
 
@@ -169,220 +150,28 @@
 			return ERR_INVALID_PARAMETER;
 		}
         
-		int nCount = 0;
-        Connection conn = null;
-        PreparedStatement pst = null;
+        SelectResult sr = new SelectResult();
+        sr.obj = deviData;
         
-		try {
-			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+        select(null, "SELECT * FROM device_list WHERE device_id = ?",
+        		new Object[]{strDeviceId}, new ResultSetReader() {
+            @Override 
+            public void read(ResultSet rs, SelectResult sr) throws Exception {
+            	sr.status = 0;
+            	DeviceData d = (DeviceData) sr.obj;
+            	
+            	while (rs.next()) {
+                    ++sr.status;
+                    d.device_id = rs.getString("device_id");
+                    d.device_os = rs.getString("device_os");
+                    d.create_time = rs.getString("create_time");
+                    d.update_time = rs.getString("update_time");
+                }
+            }
+        }, sr);
 
-			if (conn != null) {
-				pst = conn.prepareStatement("SELECT * FROM device_list WHERE device_id = ?");
-				pst.setString(1, strDeviceId);
-				ResultSet rs = pst.executeQuery();
-	
-				while (rs.next()) {
-					++nCount;
-					deviData.device_id = rs.getString("device_id");
-					deviData.device_os = rs.getString("device_os");
-					deviData.create_time = rs.getString("create_time");
-					deviData.update_time = rs.getString("update_time");
-				}
-				
-				rs.close();
-				pst.close();
-			}
-			
-			closeConn(conn);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Logs.showTrace(e.toString());
-			return ERR_EXCEPTION;
-		}
-		return nCount;
+		return sr.status;
 	}
-
-
-
-	/** DEVICE SETTING API **/
-
-    public int querySetting(final String strDeviceId, final String strType, DeviceSetData deviSetData) {
-        if (!StringUtility.isValid(strDeviceId)) {
-            return ERR_INVALID_PARAMETER;
-        }
-        
-        int nCount = 0;
-		Connection conn = null;
-
-		try {
-			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
-
-			if (null != conn) {
-                PreparedStatement pst = conn.prepareStatement("SELECT * FROM device_setting WHERE device_id = ? AND setting_type = ?");
-                pst.setString(1, strDeviceId);
-                pst.setString(2, strType);
-                ResultSet rs = pst.executeQuery();
-                
-				while (rs.next()) {
-					++nCount;
-					deviSetData.cmmd_id = rs.getInt("cmmd_id");
-					deviSetData.device_id = rs.getString("device_id");
-					deviSetData.setting_type = rs.getString("setting_type");
-					deviSetData.action = rs.getInt("action");
-					deviSetData.create_time = rs.getString("create_time");
-					deviSetData.update_time = rs.getString("update_time");
-				}
-				rs.close();
-				pst.close();
-			}
-			
-			closeConn(conn);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Logs.showTrace(e.toString());
-			return ERR_EXCEPTION;
-		}
-		
-		return nCount;
-	}
-
-	/** ROUTINE SETTING API **/
-
-	public int queryRoutineList(final String strDeviceId, final String strType,  ArrayList<RoutineData> listRoutine) {
-		int nCount = 0;
-		Connection conn = null;
-		String strSQL = "SELECT * FROM routine_setting WHERE device_id = '" + strDeviceId + "' AND routine_type ='"
-				+ strType + "'";
-
-		if (!StringUtility.isValid(strDeviceId)) {
-			return ERR_INVALID_PARAMETER;
-		}
-		
-		try {
-			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
-
-			if (null != conn) {
-				Statement stat = conn.createStatement();
-				ResultSet rs = stat.executeQuery(strSQL);
-
-				while (rs.next()) {
-					++nCount;
-					RoutineData routineData = new RoutineData();
-					routineData.routine_id = rs.getInt("routine_id");
-					routineData.device_id = rs.getString("device_id");
-					routineData.title = rs.getString("title");
-					routineData.start_time = rs.getString("start_time");
-					routineData.repeat = rs.getInt("repeat");
-					routineData.meta_id = rs.getInt("meta_id");
-					listRoutine.add(routineData);
-					//System.out.println(listRoutine.get(0).routine_id);
-				}
-				//nCount = listRoutine.size();
-				rs.close();
-				stat.close();
-			}
-		
-			closeConn(conn);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Logs.showTrace(e.toString());
-			return ERR_EXCEPTION;
-		}
-		
-		return nCount;
-	}
-
-	public int queryRoutine(final String strDeviceId, final String strType, final String strTime, ArrayList<RoutineData> listRoutine) {
-		int nCount = 0;
-		Connection conn = null;
-		String strSQL = "SELECT * FROM routine_setting WHERE device_id = '" + strDeviceId + "' AND routine_type ='"
-				+ strType + "' AND start_time ='" + strTime + "'";
-
-		if (!StringUtility.isValid(strDeviceId)) {
-			return ERR_INVALID_PARAMETER;
-		}
-		
-		try {
-			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
-
-			if (null != conn) {
-				Statement stat = conn.createStatement();
-				ResultSet rs = stat.executeQuery(strSQL);
-
-				while (rs.next()) {
-					++nCount;
-					RoutineData routineData = new RoutineData();
-					routineData.routine_id = rs.getInt("routine_id");
-					routineData.device_id = rs.getString("device_id");
-					routineData.title = rs.getString("title");
-					routineData.start_time = rs.getString("start_time");
-					routineData.repeat = rs.getInt("repeat");
-					routineData.meta_id = rs.getInt("meta_id");
-					listRoutine.add(routineData);
-				}
-				rs.close();
-				stat.close();
-			}
-			
-			closeConn(conn);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Logs.showTrace(e.toString());
-			return ERR_EXCEPTION;
-		}
-		
-		return nCount;
-	}
-
-	public int queryRoutineID(final String strDeviceId, final String strType, final String strTime) {
-		int nRoutineId = 0;
-		Connection conn = null;
-		String strSQL = "SELECT routine_id FROM routine_setting WHERE device_id = '" + strDeviceId + "' AND routine_type ='"
-				+ strType + "' AND start_time ='" + strTime + "'";
-
-		if (!StringUtility.isValid(strDeviceId)) {
-			return ERR_INVALID_PARAMETER;
-		}
-		
-		try {
-			conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
-
-			if (null != conn) {
-				Statement stat = conn.createStatement();
-				ResultSet rs = stat.executeQuery(strSQL);
-
-				while (rs.next()) {
-					nRoutineId = rs.getInt("routine_id");
-				}
-				rs.close();
-				stat.close();
-			}
-			
-			closeConn(conn);
-		} catch (Exception e) {
-			e.printStackTrace();
-			Logs.showTrace(e.toString());
-			return ERR_EXCEPTION;
-		}
-		
-		return nRoutineId;
-	}
-
-	/****    Brush Teeth    ****/
-
-	public int insertBrush(final String strDeviceId, final String strType, final String strTitle, final String strTime, final int nRepeat) {
-		if (strType != "brush teeth" || 1 < nRepeat || 0 > nRepeat) {
-	         return ERR_INVALID_PARAMETER;
-	     }
-	     
-	     if (!StringUtility.isValid(strDeviceId)) {
-	         return ERR_INVALID_PARAMETER;
-	     }
-
-	    return insertUpdateDelete("INSERT INTO routine_setting(device_id, routine_type, title, start_time, repeat)VALUES(?,?,?,?,?)",
-	    		new Object[]{strDeviceId, strType, strTitle, strTime, Integer.valueOf(nRepeat)});	
-	}
-
 	
     /****    Helpers    ****/
 
@@ -402,16 +191,18 @@
     	return s != null && s.length() > 0;
     }
 	
-    public int insertUpdateDelete(final String template, Object[] params) {
+    public int insertUpdateDelete(final String template, final Object[] params) {
         return insertUpdateDelete(null, template, params);
     }
 
-	public int insertUpdateDelete(Connection conn, final String template, Object[] params) {
+	public int insertUpdateDelete(Connection conn, final String template, final Object[] params) {
 	    PreparedStatement pst = null;
-
+	    boolean closeConnOnReturn = false;
+	    
 	    try {
 	    	if (conn == null) {
     		   conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+    		   closeConnOnReturn = true;
    		    }
 
             pst = conn.prepareStatement(template);
@@ -433,12 +224,88 @@
             }
             pst.executeUpdate();
             pst.close();
+            
+            return ERR_SUCCESS;
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        Logs.showTrace(e.toString());
+	        
 	        return ERR_EXCEPTION;
-	    }
+	    } finally {
+            if (closeConnOnReturn) {
+                closeConn(conn);
+            }
+	    }	    
+	}	
+	
+	public static class SelectResult {
+		int status;
+		Object obj;
+		
+		public SelectResult() {
+			status = 0;
+			obj = null;
+		}
+	}
+	
+	public interface ResultSetReader {
+		void read(ResultSet rs, SelectResult sr) throws Exception;
+	}
+	
+    public SelectResult select(final String template, final Object[] params
+    		,final ResultSetReader reader) {
+         return select(null, template, params, reader, new SelectResult());
+     }
+    
+    public SelectResult select(final Connection conn, final String template, 
+   		   final Object[] params, final ResultSetReader reader) {
+        return select(conn, template, params, reader, new SelectResult());
+    }
+   
+	public SelectResult select(Connection conn, final String template, 
+			final Object[] params, final ResultSetReader reader, SelectResult ret) {
+		PreparedStatement pst = null;
+		boolean closeConnOnReturn = false;
+		
+        try {
+            if (conn == null) {
+               conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+               closeConnOnReturn = true;
+            }
 
-	    return ERR_SUCCESS;
+            pst = conn.prepareStatement(template);
+            int paramIndex = 1;
+            
+            for (int i = 0; i < params.length; i++) {
+                Object param = params[i];
+                
+                if (params[i] instanceof Integer) {
+                    pst.setInt(paramIndex++, ((Integer)param).intValue());
+                } else if (params[i] instanceof Long) {
+                    pst.setLong(paramIndex++, ((Integer)param).longValue());
+                } else if (params[i] instanceof String) {
+             	    pst.setString(paramIndex++, (String)param);
+                } else {
+             	    throw new IllegalArgumentException(
+             	    	    "unsupported type of parameter " + param.getClass().getName());
+                }
+            }
+            
+            ResultSet rs = pst.executeQuery();
+            reader.read(rs, ret);
+            
+            rs.close();
+            pst.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logs.showTrace(e.toString());
+            ret.status = ERR_EXCEPTION;
+        } finally {
+        	if (closeConnOnReturn) {
+        		closeConn(conn);
+        	}
+        	
+        	return ret;
+        }
 	}
 %>

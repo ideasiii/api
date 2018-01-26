@@ -9,7 +9,7 @@ private JSONObject processRequest(HttpServletRequest request) {
 	if (!request.getParameterMap().containsKey("device_id")) {
         return ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM);
     }
-    
+
     final String strDeviceId = request.getParameter("device_id");
 
     if (!isValidDeviceId(strDeviceId)) {
@@ -37,7 +37,7 @@ private JSONObject processRequest(HttpServletRequest request) {
                 jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
                 break;
             default:
-                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
+                jobj = ApiResponse.ApiResponse.getUnknownErrorResponse();
             }
         }
     } else {
@@ -53,10 +53,10 @@ private JSONObject processRequest(HttpServletRequest request) {
                 jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
                 break;
             default:
-                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
+                jobj = ApiResponse.ApiResponse.getUnknownErrorResponse();
         }
     }
-    
+
     return jobj;
 }
 
@@ -69,13 +69,12 @@ public int deleteSetting(final String strDeviceId) {
     	Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 
         if (null != conn) {
+        	Object[] vals = new Object[]{strDeviceId};
+
         	insertUpdateDelete(conn,
-        			"DELETE FROM device_setting WHERE device_id = ?",
-                    new Object[]{strDeviceId});
-        	
+        			"DELETE FROM device_setting WHERE device_id = ?", vals);
         	insertUpdateDelete(conn,
-        			"DELETE FROM routine_setting WHERE device_id = ?",
-                    new Object[]{strDeviceId});
+        			"DELETE FROM routine_setting WHERE device_id = ?", vals);
         }
 
         closeConn(conn);
@@ -89,5 +88,5 @@ public int deleteSetting(final String strDeviceId) {
 
 <%
 	JSONObject jobj = processRequest(request);
-	out.println(jobj.toString());
+	out.print(jobj.toString());
 %>

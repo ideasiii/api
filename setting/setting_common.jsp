@@ -1,5 +1,6 @@
 <%@ include file="../api_common.jsp"%>
 <%@ include file="../response_generator.jsp"%>
+<%@ include file="setting_db_operations.jsp"%>
 
 <%@ page import="org.json.JSONObject"%>
 
@@ -55,7 +56,7 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
                 jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
                 break;
             default:
-                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
+                jobj = ApiResponse.ApiResponse.getUnknownErrorResponse();
             }
         }
     } else {
@@ -71,7 +72,7 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
             break;
         default:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
+            jobj = ApiResponse.getUnknownErrorResponse();
         }
     }
 
@@ -89,9 +90,9 @@ public int insertSetting(final String strDeviceId, final String strType, final i
 // Updates setting in database, the caller of this method
 // is responsible for checking the validity of nAction and strType!
 public int updateSetting(final String strDeviceId, final String strType, final int nAction) {
-	   return insertUpdateDelete(
-	            "UPDATE device_setting SET action=? WHERE device_id=? AND setting_type=?",
-	            new Object[]{Integer.valueOf(nAction), strDeviceId, strType});
+   return insertUpdateDelete(
+            "UPDATE device_setting SET action=? WHERE device_id=? AND setting_type=?",
+            new Object[]{Integer.valueOf(nAction), strDeviceId, strType});
 }
 
 %>

@@ -54,7 +54,7 @@ public static class ApiResponse {
             } else if (status.equals(STATUS_INTERNAL_ERROR)) {
                 message = "Internal server error.";
             } else {
-                message = "Undefined error type.";
+                message = "Unknown error.";
             }
         }
 
@@ -65,6 +65,13 @@ public static class ApiResponse {
 	public static JSONObject getSuccessResponseTemplate() {
 		JSONObject ret = new JSONObject();
         ret.put("success", true);
+        return ret;
+	}
+	
+	public static JSONObject getUnknownErrorResponse() {
+		JSONObject ret = new JSONObject();
+        ret.put("success", false);
+        ret.put("message", "Unknown error.");
         return ret;
 	}
 }

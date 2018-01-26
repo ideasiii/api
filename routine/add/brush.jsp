@@ -3,6 +3,24 @@
 <%@ page import="org.json.JSONException"%>
 
 <%@include file="../../api_common.jsp"%>
+<%@include file="../db_op.jsp"%>
+
+<%!
+public int insertBrush(final String strDeviceId, final String strType,
+        final String strTitle, final String strTime, final int nRepeat) {
+    if (strType != "brush teeth" || 1 < nRepeat || 0 > nRepeat) {
+         return ERR_INVALID_PARAMETER;
+     }
+
+     if (!StringUtility.isValid(strDeviceId)) {
+         return ERR_INVALID_PARAMETER;
+     }
+
+    return insertUpdateDelete(
+            "INSERT INTO routine_setting(device_id, routine_type, title, start_time, repeat)VALUES(?,?,?,?,?)",
+            new Object[]{strDeviceId, strType, strTitle, strTime, Integer.valueOf(nRepeat)});
+}
+%>
 
 <%
 	final String strDeviceId = request.getParameter("device_id");
@@ -33,7 +51,7 @@
 			jobj.put("message", strMessage);
 
 			Logs.showTrace("********error*********Time: " + time + "  " + strTime);
-			out.println(jobj.toString());
+			out.print(jobj.toString());
 			return;
 		}
 	} else {
@@ -55,7 +73,7 @@
 		jobj.put("error", strError);
 		jobj.put("message", strMessage);
 
-		out.println(jobj.toString());
+		out.print(jobj.toString());
 		return;
 	}// invalid Start_time input
 
@@ -75,7 +93,7 @@
 				jobj.put("message", strMessage);
 
 				Logs.showTrace("********error*********nRepeat: " + nRepeat + " strRepeat: " + strRepeat);
-				out.println(jobj.toString());
+				out.print(jobj.toString());
 				return;
 			}
 
@@ -105,7 +123,7 @@
 						jobj.put("routine_id", nRoutineId);
 
 						Logs.showTrace("**********************nInsert: " + nInsert + " nRoutineId: " + nRoutineId);
-						out.println(jobj.toString());
+						out.print(jobj.toString());
 					 } else {
 						//routineID exception
 
@@ -118,7 +136,7 @@
 							jobj.put("message", strMessage);
 
 							Logs.showTrace("********error*********nRoutineId: " + nRoutineId + "***nRepeat: " + nRepeat + " id: " + strDeviceId + " time: " + strTime);
-							out.println(jobj.toString());
+							out.print(jobj.toString());
 							return;
 					 }
 
@@ -145,7 +163,7 @@
 						jobj.put("message", strMessage);
 
 						Logs.showTrace("********error*********nInsert: " + nInsert + "***nRepeat: " + nRepeat + " id: " + strDeviceId + " time: " + strTime);
-						out.println(jobj.toString());
+						out.print(jobj.toString());
 						return;
 					}
 
@@ -174,7 +192,7 @@
 				jobj.put("message", strMessage);
 
 				Logs.showTrace("********error*********nCount: " + nCount);
-				out.println(jobj.toString());
+				out.print(jobj.toString());
 				return;
 				}
 
@@ -202,7 +220,7 @@
 					jobj.put("message", strMessage);
 
 					Logs.showTrace("********error*********nCountDevice: " + nCountDevice);
-					out.println(jobj.toString());
+					out.print(jobj.toString());
 					return;
 			}
 
@@ -226,7 +244,7 @@
 		jobj.put("error", strError);
 		jobj.put("message", strMessage);
 
-		out.println(jobj.toString());
+		out.print(jobj.toString());
 		return;
 	} // invalid Repeat input
 

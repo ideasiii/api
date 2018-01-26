@@ -2,5 +2,5 @@
 
 <%
     JSONObject jobj = processRequest(request, "language");
-    out.println(jobj.toString());
+    out.print(jobj.toString());
 %>

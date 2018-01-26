@@ -1,5 +1,6 @@
 <%@ include file="../../api_common.jsp"%>
 <%@ include file="../../response_generator.jsp"%>
+<%@ include file="../setting_db_operations.jsp"%>
 
 <%@ page import="org.json.JSONObject"%>
 
@@ -9,13 +10,13 @@ public JSONObject processRequest(HttpServletRequest request, String strType) {
     if (!request.getParameterMap().containsKey("device_id")) {
         return ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM);
     }
-    
+
     final String strDeviceId = request.getParameter("device_id");
 
     if (!isValidDeviceId(strDeviceId)) {
         return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
     }
-    
+
     DeviceSetData deviSetData = new DeviceSetData();
     JSONObject jobj;
 
@@ -39,7 +40,7 @@ public JSONObject processRequest(HttpServletRequest request, String strType) {
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
             break;
         default:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR, "Unknown error.");
+            jobj = ApiResponse.ApiResponse.getUnknownErrorResponse();
         }
 
         Logs.showTrace("********error*********nCount: " + nCount);
