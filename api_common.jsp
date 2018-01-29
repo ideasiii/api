@@ -147,11 +147,33 @@
 
 	/** Device Manager API **/
 
+	/**
+	 * 有時候我們只想知道 device ID 有沒有在 DB 內，但不想要詳細資訊
+	 * @return 若發生錯誤，傳回 ERR_EXCEPTION，否則傳回一個大於等於零的值，代表取得的資料筆數
+	 */
+	public int checkDeviceIdExistance(final String strDeviceId) {
+		SelectResult sr = new SelectResult();
+
+        select(null, "SELECT NULL FROM device_list WHERE device_id=?",
+                new Object[]{strDeviceId}, new ResultSetReader() {
+            @Override
+            public void read(ResultSet rs, SelectResult sr) throws Exception {
+                sr.status = 0;
+
+                while (rs.next()) {
+                    ++sr.status;
+                }
+            }
+        }, sr);
+
+        return sr.status;
+	}
+	
 	public int queryDevice(final String strDeviceId, DeviceData deviData) {
         SelectResult sr = new SelectResult();
         sr.obj = deviData;
 
-        select(null, "SELECT * FROM device_list WHERE device_id = ?",
+        select(null, "SELECT * FROM device_list WHERE device_id=?",
         		new Object[]{strDeviceId}, new ResultSetReader() {
             @Override
             public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -260,6 +282,12 @@
         return select(conn, template, params, reader, new SelectResult());
     }
 
+    /**
+     * Does SELECT operation to designated connection
+     * @return ERR_EXCEPTION if error occured, otherwise return user-defined value.
+     *         Caller should be able to distinguish ERR_EXCEPTION and their special return value.	   
+     */
+    
 	public SelectResult select(Connection conn, final String template,
 			final Object[] params, final ResultSetReader reader, SelectResult ret) {
 		PreparedStatement pst = null;

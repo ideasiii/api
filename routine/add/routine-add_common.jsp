@@ -1,12 +1,12 @@
 <%@include file="../../api_common.jsp"%>
-<%@include file="../db_op.jsp"%>
-<%@include file="routine-add_common.jsp"%>
+<%@include file="../../response_generator.jsp"%>
+<%@include file="../routine__common.jsp"%>
 
 <%@ page import="org.json.JSONObject"%>
 
 <%!
 
-private JSONOject processRequest(HttpServletRequest request, final String strType) {
+private JSONObject processAddRoutineRequest(HttpServletRequest request, final String strType) {
     if (!request.getParameterMap().containsKey("device_id")
             || !request.getParameterMap().containsKey("title")
             || !request.getParameterMap().containsKey("start_time")
@@ -30,11 +30,9 @@ private JSONOject processRequest(HttpServletRequest request, final String strTyp
     }
 
     final int nRepeat = Integer.parseInt(strRepeat.trim());
-    DeviceData deviData = new DeviceData();
-    ArrayList<RoutineData> listRoutine = new ArrayList<RoutineData>();
     JSONObject jobj;
 
-    int nCountDevice = queryDevice(strDeviceId, deviData);
+    int nCountDevice = checkDeviceIdExistance(strDeviceId);
 
     if (nCountDevice < 1) {
         // Device not found
@@ -56,7 +54,7 @@ private JSONOject processRequest(HttpServletRequest request, final String strTyp
     }
 
     // Device exists, search for possibly duplicated routines
-    int nCount = queryRoutineInGivenTime(strDeviceId, strType, strTime, listRoutine);
+    int nCount = checkRoutineExistance(strDeviceId, strType, strTime);
 
     if (nCount != 0) {
         if (nCount > 0) {

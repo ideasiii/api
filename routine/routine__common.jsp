@@ -27,13 +27,12 @@ public int queryRoutineList(final String strDeviceId, final String strType, fina
     return sr.status;
 }
 
-// 取得生活作息設定，需指定 device ID 、指定時間點、指定類型
-// 與 queryRoutineList() 相比，本方法因為額外指定時間點，理論上只會傳回一條資料
-public int queryRoutineInGivenTime(final String strDeviceId, final String strType, 
-        final String strTime, final ArrayList<RoutineData> listRoutine) {   
+// 查詢指定 device ID 、指定時間點、指定類型的 routine ，確認是否已存在於 DB
+public int checkRoutineExistance(final String strDeviceId, final String strType, 
+        final String strTime) {   
     SelectResult sr = new SelectResult();
     
-    select(null, "SELECT * FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
+    select(null, "SELECT NULL FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
             new Object[]{strDeviceId, strType, strTime}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -41,14 +40,6 @@ public int queryRoutineInGivenTime(final String strDeviceId, final String strTyp
             
             while (rs.next()) {
                 ++sr.status;
-                RoutineData routineData = new RoutineData();
-                routineData.routine_id = rs.getInt("routine_id");
-                routineData.device_id = rs.getString("device_id");
-                routineData.title = rs.getString("title");
-                routineData.start_time = rs.getString("start_time");
-                routineData.repeat = rs.getInt("repeat");
-                routineData.meta_id = rs.getInt("meta_id");
-                listRoutine.add(routineData);
             }
         }
     }, sr);

@@ -56,9 +56,10 @@ private int insertDevice(final String strDeviceId, final String strDeviceOs) {
 	DeviceData deviData = new DeviceData();
 	int nCount = queryDevice(strDeviceId, deviData);
 
-	if (0 < nCount) {
-	    return ERR_CONFLICT;
-	}
+    int nCount = checkDeviceIdExistance(strDeviceId);
+    if (nCount != 0) {
+    	return (nCount > 0) ? ERR_CONFLICT : nCount; 
+    }
 
 	return insertUpdateDelete(
 	        "INSERT INTO device_list(device_id, device_os) VALUES (?,?)",
