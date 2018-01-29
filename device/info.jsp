@@ -27,19 +27,15 @@ private JSONObject processRequest(HttpServletRequest request) {
         Logs.showTrace("**********************nCount: " + nCount);
     } else {
         switch (nCount) {
-        case ERR_FAIL:
+        case 0:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND,
                 "device_id not found.");
-            break;
-        case ERR_INVALID_PARAMETER:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE,
-                "Invalid device_id.");
             break;
         case ERR_EXCEPTION:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
             break;
         default:
-            jobj = ApiResponse.ApiResponse.getUnknownErrorResponse();
+            jobj = ApiResponse.getUnknownErrorResponse();
         }
 
         Logs.showTrace("********error*********nCount: " + nCount);

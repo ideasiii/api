@@ -11,17 +11,19 @@
 
 <%! // shared methods and constants
     public final static int ERR_SUCCESS = 1;
-	public final static int ERR_FAIL = 0;
+
+	/* no ERR constant with value 0 as its appearance in code sometimes confusing */
+	
 	public final static int ERR_EXCEPTION = -1;
 	public final static int ERR_INVALID_PARAMETER = -2;
 	public final static int ERR_CONFLICT = -3;
 
 	public class Common {
 		private static final String DB_IP = "52.68.108.37";
-		
+
 		// dev environment
 		//private static final DB_IP = "10.0.20.130";
-		
+
 		final public static String DB_URL = "jdbc:mysql://" + DB_IP + ":3306/edubot?useUnicode=true&characterEncoding=UTF-8&verifyServerCertificate=false";
 		final public static String DB_USER = "more";
 		final public static String DB_PASS = "ideas123!";
@@ -127,7 +129,7 @@
 			e.printStackTrace();
 			Logs.showTrace(e.toString());
 		}
-		
+
 		return conn;
 	}
 
@@ -146,20 +148,16 @@
 	/** Device Manager API **/
 
 	public int queryDevice(final String strDeviceId, DeviceData deviData) {
-		if (!StringUtility.isValid(strDeviceId)) {
-			return ERR_INVALID_PARAMETER;
-		}
-        
         SelectResult sr = new SelectResult();
         sr.obj = deviData;
-        
+
         select(null, "SELECT * FROM device_list WHERE device_id = ?",
         		new Object[]{strDeviceId}, new ResultSetReader() {
-            @Override 
+            @Override
             public void read(ResultSet rs, SelectResult sr) throws Exception {
             	sr.status = 0;
             	DeviceData d = (DeviceData) sr.obj;
-            	
+
             	while (rs.next()) {
                     ++sr.status;
                     d.device_id = rs.getString("device_id");
@@ -172,25 +170,25 @@
 
 		return sr.status;
 	}
-	
+
     /****    Helpers    ****/
 
-    public static boolean checkTime(String str) {
+    public static boolean hasValidTimeFormat(String str) {
         return str == null ? false : str.matches("(?:[01]\\d|2[0123]):(?:[012345]\\d):(?:[012345]\\d)");
     }
 
     public static boolean isInteger(String s) {
         return s == null ? false : s.matches("[-+]?[0-9]+");
     }
-    
-    public static boolean isValidDeviceId(String s) {
+
+    public static boolean isValidDeviceId(final String s) {
         return StringUtility.isValid(s);
     }
-    
-    public static boolean isNotEmptyString(String s) {
+
+    public static boolean isNotEmptyString(final String s) {
     	return s != null && s.length() > 0;
     }
-	
+
     public int insertUpdateDelete(final String template, final Object[] params) {
         return insertUpdateDelete(null, template, params);
     }
@@ -198,7 +196,7 @@
 	public int insertUpdateDelete(Connection conn, final String template, final Object[] params) {
 	    PreparedStatement pst = null;
 	    boolean closeConnOnReturn = false;
-	    
+
 	    try {
 	    	if (conn == null) {
     		   conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
@@ -207,10 +205,10 @@
 
             pst = conn.prepareStatement(template);
             int paramIndex = 1;
-            
+
             for (int i = 0; i < params.length; i++) {
             	Object param = params[i];
-            	
+
             	if (params[i] instanceof Integer) {
                     pst.setInt(paramIndex++, ((Integer)param).intValue());
             	} else if (params[i] instanceof Long) {
@@ -224,49 +222,49 @@
             }
             pst.executeUpdate();
             pst.close();
-            
+
             return ERR_SUCCESS;
 	    } catch (Exception e) {
 	        e.printStackTrace();
 	        Logs.showTrace(e.toString());
-	        
+
 	        return ERR_EXCEPTION;
 	    } finally {
             if (closeConnOnReturn) {
                 closeConn(conn);
             }
-	    }	    
-	}	
-	
+	    }
+	}
+
 	public static class SelectResult {
 		int status;
 		Object obj;
-		
+
 		public SelectResult() {
 			status = 0;
 			obj = null;
 		}
 	}
-	
+
 	public interface ResultSetReader {
 		void read(ResultSet rs, SelectResult sr) throws Exception;
 	}
-	
+
     public SelectResult select(final String template, final Object[] params
     		,final ResultSetReader reader) {
          return select(null, template, params, reader, new SelectResult());
      }
-    
-    public SelectResult select(final Connection conn, final String template, 
+
+    public SelectResult select(final Connection conn, final String template,
    		   final Object[] params, final ResultSetReader reader) {
         return select(conn, template, params, reader, new SelectResult());
     }
-   
-	public SelectResult select(Connection conn, final String template, 
+
+	public SelectResult select(Connection conn, final String template,
 			final Object[] params, final ResultSetReader reader, SelectResult ret) {
 		PreparedStatement pst = null;
 		boolean closeConnOnReturn = false;
-		
+
         try {
             if (conn == null) {
                conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
@@ -275,10 +273,10 @@
 
             pst = conn.prepareStatement(template);
             int paramIndex = 1;
-            
+
             for (int i = 0; i < params.length; i++) {
                 Object param = params[i];
-                
+
                 if (params[i] instanceof Integer) {
                     pst.setInt(paramIndex++, ((Integer)param).intValue());
                 } else if (params[i] instanceof Long) {
@@ -290,10 +288,10 @@
              	    	    "unsupported type of parameter " + param.getClass().getName());
                 }
             }
-            
+
             ResultSet rs = pst.executeQuery();
             reader.read(rs, ret);
-            
+
             rs.close();
             pst.close();
         } catch (Exception e) {
@@ -304,7 +302,7 @@
         	if (closeConnOnReturn) {
         		closeConn(conn);
         	}
-        	
+
         	return ret;
         }
 	}

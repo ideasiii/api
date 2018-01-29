@@ -1,9 +1,7 @@
-<%!
-public int queryRoutineList(final String strDeviceId, final String strType, final ArrayList<RoutineData> listRoutine) {
-    if (!StringUtility.isValid(strDeviceId)) {
-        return ERR_INVALID_PARAMETER;
-    }
-    
+<%! // DB operations shared among /routine/**/*.jsp pages
+
+//取得生活作息設定，需指定 device ID 、指定類型。不須指定時間點
+public int queryRoutineList(final String strDeviceId, final String strType, final ArrayList<RoutineData> listRoutine) {    
     SelectResult sr = new SelectResult();
     
     select(null, "SELECT * FROM routine_setting WHERE device_id=? AND routine_type=?",
@@ -29,12 +27,10 @@ public int queryRoutineList(final String strDeviceId, final String strType, fina
     return sr.status;
 }
 
-public int queryRoutine(final String strDeviceId, final String strType, 
-        final String strTime, final ArrayList<RoutineData> listRoutine) {
-    if (!StringUtility.isValid(strDeviceId)) {
-        return ERR_INVALID_PARAMETER;
-    }
-    
+// 取得生活作息設定，需指定 device ID 、指定時間點、指定類型
+// 與 queryRoutineList() 相比，本方法因為額外指定時間點，理論上只會傳回一條資料
+public int queryRoutineInGivenTime(final String strDeviceId, final String strType, 
+        final String strTime, final ArrayList<RoutineData> listRoutine) {   
     SelectResult sr = new SelectResult();
     
     select(null, "SELECT * FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
@@ -61,10 +57,6 @@ public int queryRoutine(final String strDeviceId, final String strType,
 }
 
 public int queryRoutineID(final String strDeviceId, final String strType, final String strTime) {
-    if (!StringUtility.isValid(strDeviceId)) {
-        return ERR_INVALID_PARAMETER;
-    }
-    
     SelectResult sr = new SelectResult();
     
     select(null, "SELECT routine_id FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",

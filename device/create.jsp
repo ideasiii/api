@@ -34,7 +34,6 @@ private JSONObject processRequest(HttpServletRequest request) {
         jobj = ApiResponse.getSuccessResponseTemplate();
     } else {
         switch (nInsert) {
-        case ERR_FAIL:
         case ERR_EXCEPTION:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
             break;

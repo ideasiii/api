@@ -48,7 +48,6 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
             jobj = ApiResponse.getSuccessResponseTemplate();
         } else {
             switch (nRet) {
-            case ERR_FAIL:
             case ERR_EXCEPTION:
                 jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
                 break;
@@ -56,13 +55,13 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
                 jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
                 break;
             default:
-                jobj = ApiResponse.ApiResponse.getUnknownErrorResponse();
+                jobj = ApiResponse.getUnknownErrorResponse();
             }
         }
     } else {
         // Device not found
         switch (nCountDevice) {
-        case ERR_FAIL:
+        case 0:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND, "device_id not found.");
             break;
         case ERR_EXCEPTION:

@@ -40,7 +40,7 @@ public JSONObject processRequest(HttpServletRequest request, String strType) {
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
             break;
         default:
-            jobj = ApiResponse.ApiResponse.getUnknownErrorResponse();
+            jobj = ApiResponse.getUnknownErrorResponse();
         }
 
         Logs.showTrace("********error*********nCount: " + nCount);
