@@ -1,83 +1,65 @@
-<%@ page contentType="text/html; charset=utf-8" language="java"
-	session="false"%>
+<%@ include file="../api_common.jsp"%>
+<%@ include file="../response_generator.jsp"%>
+
 <%@ page import="org.json.JSONObject"%>
 
-
-<%@include file="../api_common.jsp"%> 
-
 <%
-	final String strDeviceId = request.getParameter("device_id");
-	boolean bSuccess = false;
-	String strError = null;
-	String strMessage = null;
-	DeviceData deviData = new DeviceData();
-
-	int nCount = queryDevice(strDeviceId, deviData);
-
-	if (0 < nCount) {
-		//Device exist
-		int nDelete = 0;
-
-		nDelete = deleteSetting(strDeviceId);
-		if (0 < nDelete) {
-			bSuccess = true;
-
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-
-			Logs.showTrace("**********************nDelete: " + nDelete);
-			out.println(jobj.toString());
-		} else {
-
-			switch (nDelete) {
-			case 0:
-				strError = "ER0500";
-				strMessage = "Internal server error.";
-				break;
-			case -1:
-				strError = "ER0500";
-				strMessage = "Internal server error.";
-				break;
-			case -2:
-				strError = "ER0220";
-				strMessage = "Invalid input.";
-				break;
-			}
-
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-			jobj.put("error", strError);
-			jobj.put("message", strMessage);
-
-			Logs.showTrace("********error*********nDelete: " + nDelete);
-			out.println(jobj.toString());
-		}
-
-	} else {
-		//Device not found
-		
-		switch (nCount) {
-			case 0:
-				strError = "ER0100";
-				strMessage = "device_id not found.";
-				break;
-			case -1:
-				strError = "ER0500";
-				strMessage = "Internal server error.";
-				break;
-			case -2:
-				strError = "ER0220";
-				strMessage = "Invalid input.";
-				break;
-			}
-			
-			JSONObject jobj = new JSONObject();
-			jobj.put("success", bSuccess);
-			jobj.put("error", strError);
-			jobj.put("message", strMessage);
-
-			Logs.showTrace("********error*********nCount: " + nCount);
-			out.println(jobj.toString());
-	}
+    JSONObject jobj = processRequest(request);
+    out.print(jobj.toString());
 %>
 
+<%!
+private JSONObject processRequest(HttpServletRequest request) {
+	if (!request.getParameterMap().containsKey("device_id")) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM);
+    }
+
+    final String strDeviceId = request.getParameter("device_id");
+
+    if (!isValidDeviceId(strDeviceId)) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER);
+    }
+    
+    final Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+    if (conn == null) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+    }
+
+    JSONObject jobj = tryIfDeviceNotExistInList(conn, strDeviceId);
+    if (jobj != null) {
+    	closeConn(conn);
+    	return jobj;
+    }
+
+    int nDelete = deleteSetting(conn, strDeviceId);
+    System.out.println("nDelete = " + nDelete);
+    if (0 < nDelete) {
+        jobj = ApiResponse.getSuccessResponseTemplate();
+    } else {
+        switch (nDelete) {
+        case ERR_EXCEPTION:
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+            break;
+        default:
+            jobj = ApiResponse.getUnknownErrorResponse();
+        }
+    }
+    
+    closeConn(conn);
+    return jobj;
+}
+
+public int deleteSetting(Connection conn, final String strDeviceId) {
+    Object[] vals = new Object[]{strDeviceId};
+
+    int ret = insertUpdateDelete(conn,
+    	    "DELETE FROM `device_setting` WHERE `device_id`=?", vals);
+    
+    if (ret == ERR_SUCCESS) {
+        ret = insertUpdateDelete(conn,
+                "DELETE FROM `routine_setting` WHERE `device_id`=?", vals);
+    }
+    
+    return ret;
+}
+%>
