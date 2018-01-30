@@ -17,10 +17,19 @@ public JSONObject processRequest(HttpServletRequest request, String strType) {
         return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
     }
 
-    DeviceSetData deviSetData = new DeviceSetData();
-    JSONObject jobj;
+    Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+    if (conn == null) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+    }
 
-    int nCount = querySetting(strDeviceId, strType, deviSetData);
+    JSONObject jobj = tryIfDeviceNotExistInList(conn, strDeviceId);
+    if (jobj != null) {
+    	closeConn(conn);
+    	return jobj;
+    }
+
+    DeviceSettingData deviSetData = new DeviceSettingData();
+    int nCount = querySetting(conn, strDeviceId, strType, deviSetData);
 
     if (0 < nCount) {
         // setting exists
@@ -30,7 +39,7 @@ public JSONObject processRequest(HttpServletRequest request, String strType) {
         // setting not found
         switch (nCount) {
         case 0:
-            jobj = ApiResponse.deviceIdNotFoundResponse();
+            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND, "value not set");
             break;
         case ERR_EXCEPTION:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
@@ -40,6 +49,7 @@ public JSONObject processRequest(HttpServletRequest request, String strType) {
         }
     }
 
+    closeConn(conn);
     return jobj;
 }
 

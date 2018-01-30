@@ -76,7 +76,7 @@ public static class ApiResponse {
         return ret;
 	}
 	
-	public static JSONObject getDeviceIdNotFoundResponse() {
+	public static JSONObject deviceIdNotFoundResponse() {
         JSONObject ret = new JSONObject();
         ret.put("success", false);
         ret.put("error", STATUS_DATA_NOT_FOUND);

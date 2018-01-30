@@ -1,8 +1,12 @@
-<%@ include file="../api_common.jsp" %>
-<%@ include file="../response_generator.jsp" %>
+<%@ include file="../api_common.jsp"%>
+<%@ include file="../response_generator.jsp"%>
 
-<%@ page import="org.json.JSONObject" %>
+<%@ page import="org.json.JSONObject"%>
 
+<%
+    JSONObject jobj = processRequest(request);
+    out.print(jobj.toString());
+%>
 
 <%! // methods used ONLY within this file
 
@@ -39,9 +43,28 @@ private JSONObject processRequest(HttpServletRequest request) {
 
     return jobj;
 }
-%>
 
-<%
-	JSONObject jobj = processRequest(request);
-	out.print(jobj.toString());
+/** 取得指定 device ID 的裝置基本資料 */
+public int queryDevice(final String strDeviceId, final DeviceData deviData) {
+    SelectResult sr = new SelectResult();
+
+    select(null, "SELECT * FROM device_list WHERE device_id=?",
+            new Object[]{strDeviceId}, new ResultSetReader() {
+        @Override
+        public void read(ResultSet rs, SelectResult sr) throws Exception {
+            sr.status = 0;
+
+            while (rs.next()) {
+                ++sr.status;
+                deviData.device_id = rs.getString("device_id");
+                deviData.device_os = rs.getString("device_os");
+                deviData.create_time = rs.getString("create_time");
+                deviData.update_time = rs.getString("update_time");
+            }
+        }
+    }, sr);
+
+    return sr.status;
+}
+
 %>

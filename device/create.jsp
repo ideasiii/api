@@ -25,8 +25,13 @@ private JSONObject processRequest(HttpServletRequest request) {
         return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_os.");
     }
 
+    final Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+    if (conn == null) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+    }
+
     JSONObject jobj;
-    int nInsert = insertDevice(null, strDeviceId, strDeviceOs);
+    int nInsert = insertDevice(conn, strDeviceId, strDeviceOs);
 
     if (0 < nInsert) {
         jobj = ApiResponse.getSuccessResponseTemplate();
@@ -44,6 +49,7 @@ private JSONObject processRequest(HttpServletRequest request) {
         }
     }
 
+    closeConn(conn);
     return jobj;
 }
 

@@ -18,27 +18,20 @@ private JSONObject processListRoutineRequest(HttpServletRequest request, final S
         return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
     }
 
-    ArrayList<RoutineData> listRoutine = new ArrayList<RoutineData>();
-    JSONObject jobj;
 
-    int nCount = checkDeviceIdExistance(null, strDeviceId);
-
-    if (nCount < 1) {
-        switch (nCount) {
-        case 0:
-            jobj = ApiResponse.deviceIdNotFoundResponse();
-            break;
-        case ERR_EXCEPTION:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-            break;
-        default:
-            jobj = ApiResponse.getUnknownErrorResponse();
-        }
-
-        return jobj;
+    final Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+    if (conn == null) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
     }
 
-    nCount = queryRoutineList(strDeviceId, strType, listRoutine);
+    JSONObject jobj = tryIfDeviceNotExistInList(conn, strDeviceId);
+    if (jobj != null) {
+    	closeConn(conn);
+    	return jobj;
+    }
+    
+    ArrayList<RoutineData> listRoutine = new ArrayList<RoutineData>();
+    int nCount = queryRoutineList(strDeviceId, strType, listRoutine);
 
     if (nCount >= 0) {
         JSONArray jsonArray = new JSONArray();
@@ -66,6 +59,7 @@ private JSONObject processListRoutineRequest(HttpServletRequest request, final S
         }
     }
 
+    closeConn(conn);
     return jobj;
 }
 %>

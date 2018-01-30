@@ -12,33 +12,19 @@ private JSONObject processAddRoutineRequest(HttpServletRequest request) {
     }
 
     final RoutineData rd = new RoutineData();
-
     if (!copyRequestParameterToRoutineData(request, rd)) {
         return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER);
     }
 
-    Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+    final Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
     if (conn == null) {
         return ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
     }
 
-    int nCountDevice = checkDeviceIdExistance(conn, rd.device_id);
-    JSONObject jobj;
-
-    if (nCountDevice < 1) {
-        switch (nCountDevice) {
-        case 0:
-            jobj = ApiResponse.deviceIdNotFoundResponse();
-            break;
-        case ERR_EXCEPTION:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-            break;
-        default:
-            jobj = ApiResponse.getUnknownErrorResponse();
-        }
-
-        closeConn(conn);
-        return jobj;
+    JSONObject jobj = tryIfDeviceNotExistInList(conn, rd.device_id);
+    if (jobj != null) {
+    	closeConn(conn);
+    	return jobj;
     }
 
     // Device exists, search for possibly duplicated routines

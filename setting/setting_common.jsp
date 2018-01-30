@@ -28,41 +28,35 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
     	return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid action.");
     }
 
-    DeviceData deviData = new DeviceData();
-    DeviceSetData deviSetData = new DeviceSetData();
-    int nCountDevice = queryDevice(strDeviceId, deviData);
-    JSONObject jobj;
+    Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
+    if (conn == null) {
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+    }
 
-    if (0 < nCountDevice) {
-        // Device exists
 
-        int nCount = querySetting(strDeviceId, strType, deviSetData);
-        int nRet;
-        if (0 < nCount) {
-            // setting exists, do update
-            nRet = updateSetting(strDeviceId, strType, nAction);
-        } else {
-            //setting not found, insert setting
-            nRet = insertSetting(strDeviceId, strType, nAction);
-        }
+    JSONObject jobj = tryIfDeviceNotExistInList(conn, strDeviceId);
+    if (jobj != null) {
+    	closeConn(conn);
+    	return jobj;
+    }
 
-        if (0 < nRet) {
-            jobj = ApiResponse.getSuccessResponseTemplate();
-        } else {
-            switch (nRet) {
-            case ERR_EXCEPTION:
-                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-                break;
-            default:
-                jobj = ApiResponse.getUnknownErrorResponse();
-            }
-        }
+    // Device exists
+    DeviceSettingData deviSetData = new DeviceSettingData();
+    int nCount = querySetting(conn, strDeviceId, strType, deviSetData);
+    int nRet;
+
+    if (0 < nCount) {
+        // setting exists, do update
+        nRet = updateSetting(conn, strDeviceId, strType, nAction);
     } else {
-        // Device not found
-        switch (nCountDevice) {
-        case 0:
-            jobj = ApiResponse.deviceIdNotFoundResponse();
-            break;
+        // setting not found, insert setting
+        nRet = insertSetting(conn, strDeviceId, strType, nAction);
+    }
+
+    if (0 < nRet) {
+        jobj = ApiResponse.getSuccessResponseTemplate();
+    } else {
+        switch (nRet) {
         case ERR_EXCEPTION:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
             break;
@@ -71,21 +65,22 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
         }
     }
 
+    closeConn(conn);
     return jobj;
 }
 
 // Inserts setting into database, the caller of this method
 // is responsible for checking the validity of nAction and strType!
-public int insertSetting(final String strDeviceId, final String strType, final int nAction) {
-	return insertUpdateDelete(
+public int insertSetting(final Connection conn, final String strDeviceId, final String strType, final int nAction) {
+	return insertUpdateDelete(conn,
 			"INSERT INTO device_setting(device_id, setting_type, action) VALUES (?,?,?)",
 			new Object[]{strDeviceId, strType, Integer.valueOf(nAction)});
 }
 
 // Updates setting in database, the caller of this method
 // is responsible for checking the validity of nAction and strType!
-public int updateSetting(final String strDeviceId, final String strType, final int nAction) {
-   return insertUpdateDelete(
+public int updateSetting(final Connection conn, final String strDeviceId, final String strType, final int nAction) {
+   return insertUpdateDelete(conn,
             "UPDATE device_setting SET action=? WHERE device_id=? AND setting_type=?",
             new Object[]{Integer.valueOf(nAction), strDeviceId, strType});
 }
