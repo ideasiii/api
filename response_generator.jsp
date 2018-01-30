@@ -5,12 +5,12 @@
 public static class ApiResponse {
 	/** 找不到指定的資料 */
 	public static final String STATUS_DATA_NOT_FOUND = "ER0100";
-
+	   
 	/** 缺少必要參數 */
 	public static final String STATUS_MISSING_PARAM = "ER0120";
 
 	/** 輸入的參數內容不在規範中 */
-	public static final String STATUS_INVALID_VALUE = "ER0220";
+	public static final String STATUS_INVALID_PARAMETER = "ER0220";
 
 	/** 輸入的參數內容抵觸 (抵觸甚麼東西?) */
 	public static final String STATUS_CONFLICTS_WITH_EXISTING_DATA = "ER0240";
@@ -47,7 +47,7 @@ public static class ApiResponse {
         		message = "The record you requested does not exist.";
         	} else if (status.equals(STATUS_MISSING_PARAM)) {
         		message = "Missing required parameter.";
-            } else if (status.equals(STATUS_INVALID_VALUE)) {
+            } else if (status.equals(STATUS_INVALID_PARAMETER)) {
             	message = "Invalid input.";
             } else if (status.equals(STATUS_CONFLICTS_WITH_EXISTING_DATA)) {
             	message =  "There is conflict between the request and existing record";
@@ -61,19 +61,28 @@ public static class ApiResponse {
         ret.put("message", message);
         return ret;
 	}
-	
+
 	public static JSONObject getSuccessResponseTemplate() {
 		JSONObject ret = new JSONObject();
         ret.put("success", true);
         return ret;
 	}
-	
+
 	public static JSONObject getUnknownErrorResponse() {
 		JSONObject ret = new JSONObject();
         ret.put("success", false);
+        ret.put("error", STATUS_INTERNAL_ERROR);
         ret.put("message", "Unknown error.");
         return ret;
 	}
+	
+	public static JSONObject getDeviceIdNotFoundResponse() {
+        JSONObject ret = new JSONObject();
+        ret.put("success", false);
+        ret.put("error", STATUS_DATA_NOT_FOUND);
+        ret.put("message", "device_id not found.");
+        return ret;
+    }
 }
 
 %>

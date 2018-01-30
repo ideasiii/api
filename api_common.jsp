@@ -13,7 +13,7 @@
     public final static int ERR_SUCCESS = 1;
 
 	/* no ERR constant with value 0 as its appearance in code sometimes confusing */
-	
+
 	public final static int ERR_EXCEPTION = -1;
 	public final static int ERR_INVALID_PARAMETER = -2;
 	public final static int ERR_CONFLICT = -3;
@@ -87,18 +87,6 @@
 		public String update_time;
 	}
 
-	public static class RoutineData {
-		public int routine_id;
-		public String device_id;
-		public String routine_type;
-		public String title;
-		public String start_time;
-		public int repeat;
-		public int meta_id;
-		public String create_time;
-		public String update_time;
-	}
-
 	public static class RepeatData {
 		public int routine_seq;
 		public int routine_id;
@@ -151,10 +139,10 @@
 	 * 有時候我們只想知道 device ID 有沒有在 DB 內，但不想要詳細資訊
 	 * @return 若發生錯誤，傳回 ERR_EXCEPTION，否則傳回一個大於等於零的值，代表取得的資料筆數
 	 */
-	public int checkDeviceIdExistance(final String strDeviceId) {
+	public int checkDeviceIdExistance(Connection conn, final String strDeviceId) {
 		SelectResult sr = new SelectResult();
 
-        select(null, "SELECT NULL FROM device_list WHERE device_id=?",
+        select(conn, "SELECT NULL FROM device_list WHERE device_id=?",
                 new Object[]{strDeviceId}, new ResultSetReader() {
             @Override
             public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -168,24 +156,22 @@
 
         return sr.status;
 	}
-	
-	public int queryDevice(final String strDeviceId, DeviceData deviData) {
+
+	public int queryDevice(final String strDeviceId, final DeviceData deviData) {
         SelectResult sr = new SelectResult();
-        sr.obj = deviData;
 
         select(null, "SELECT * FROM device_list WHERE device_id=?",
         		new Object[]{strDeviceId}, new ResultSetReader() {
             @Override
             public void read(ResultSet rs, SelectResult sr) throws Exception {
             	sr.status = 0;
-            	DeviceData d = (DeviceData) sr.obj;
 
             	while (rs.next()) {
                     ++sr.status;
-                    d.device_id = rs.getString("device_id");
-                    d.device_os = rs.getString("device_os");
-                    d.create_time = rs.getString("create_time");
-                    d.update_time = rs.getString("update_time");
+                    deviData.device_id = rs.getString("device_id");
+                    deviData.device_os = rs.getString("device_os");
+                    deviData.create_time = rs.getString("create_time");
+                    deviData.update_time = rs.getString("update_time");
                 }
             }
         }, sr);
@@ -201,6 +187,10 @@
 
     public static boolean isInteger(String s) {
         return s == null ? false : s.matches("[-+]?[0-9]+");
+    }
+
+    public static boolean isPositiveInteger(String s) {
+        return s == null ? false : s.matches("[0-9]+");
     }
 
     public static boolean isValidDeviceId(final String s) {
@@ -283,11 +273,10 @@
     }
 
     /**
-     * Does SELECT operation to designated connection
+     * Does SELECT operation in designated SQLConnection
      * @return ERR_EXCEPTION if error occured, otherwise return user-defined value.
-     *         Caller should be able to distinguish ERR_EXCEPTION and their special return value.	   
+     *         Caller should be able to distinguish ERR_EXCEPTION and their own return values.
      */
-    
 	public SelectResult select(Connection conn, final String template,
 			final Object[] params, final ResultSetReader reader, SelectResult ret) {
 		PreparedStatement pst = null;
@@ -308,7 +297,7 @@
                 if (params[i] instanceof Integer) {
                     pst.setInt(paramIndex++, ((Integer)param).intValue());
                 } else if (params[i] instanceof Long) {
-                    pst.setLong(paramIndex++, ((Integer)param).longValue());
+                    pst.setLong(paramIndex++, ((Long)param).longValue());
                 } else if (params[i] instanceof String) {
              	    pst.setString(paramIndex++, (String)param);
                 } else {

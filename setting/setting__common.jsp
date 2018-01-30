@@ -1,13 +1,9 @@
-<%! // shared methods among setting/__.jsp and setting/option/__.jsp pages
+<%! // shared methods among setting/**/*.jsp pages
 
 /**
  * Get current setting of given device ID, filtered by specified type, saves to DeviceSetData
  */
 public int querySetting(final String strDeviceId, final String strType, final DeviceSetData deviSetData) {
-    if (!StringUtility.isValid(strDeviceId)) {
-        return ERR_INVALID_PARAMETER;
-    }
-
     SelectResult sr = new SelectResult();
     
     select(null, "SELECT * FROM device_setting WHERE device_id=? AND setting_type=?",

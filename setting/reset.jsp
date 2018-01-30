@@ -13,14 +13,13 @@ private JSONObject processRequest(HttpServletRequest request) {
     final String strDeviceId = request.getParameter("device_id");
 
     if (!isValidDeviceId(strDeviceId)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
     }
 
     DeviceData deviData = new DeviceData();
     JSONObject jobj;
 
     int nCount = queryDevice(strDeviceId, deviData);
-    Logs.showTrace("**********************nCount: " + nCount);
 
     if (0 < nCount) {
         // Device record exists
@@ -32,24 +31,17 @@ private JSONObject processRequest(HttpServletRequest request) {
             case ERR_EXCEPTION:
                 jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
                 break;
-            case ERR_INVALID_PARAMETER:
-                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
-                break;
             default:
                 jobj = ApiResponse.getUnknownErrorResponse();
             }
         }
     } else {
-        // Device not found
         switch (nCount) {
             case 0:
-                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND, "device_id not found.");
+                jobj = ApiResponse.deviceIdNotFoundResponse();
                 break;
             case ERR_EXCEPTION:
                 jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-                break;
-            case ERR_INVALID_PARAMETER:
-                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
                 break;
             default:
                 jobj = ApiResponse.getUnknownErrorResponse();
@@ -60,10 +52,6 @@ private JSONObject processRequest(HttpServletRequest request) {
 }
 
 public int deleteSetting(final String strDeviceId) {
-    if (!StringUtility.isValid(strDeviceId)) {
-        return ERR_INVALID_PARAMETER;
-    }
-
     try {
     	Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
 

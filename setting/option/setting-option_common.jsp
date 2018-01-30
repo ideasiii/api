@@ -1,6 +1,6 @@
 <%@ include file="../../api_common.jsp"%>
 <%@ include file="../../response_generator.jsp"%>
-<%@ include file="../setting_db_operations.jsp"%>
+<%@ include file="../setting__common.jsp"%>
 
 <%@ page import="org.json.JSONObject"%>
 
@@ -14,7 +14,7 @@ public JSONObject processRequest(HttpServletRequest request, String strType) {
     final String strDeviceId = request.getParameter("device_id");
 
     if (!isValidDeviceId(strDeviceId)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
     }
 
     DeviceSetData deviSetData = new DeviceSetData();
@@ -29,21 +29,15 @@ public JSONObject processRequest(HttpServletRequest request, String strType) {
     } else {
         // setting not found
         switch (nCount) {
-        case ERR_FAIL:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND,
-                    "device_id not found.");
+        case 0:
+            jobj = ApiResponse.deviceIdNotFoundResponse();
             break;
         case ERR_EXCEPTION:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
             break;
-        case ERR_INVALID_PARAMETER:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
-            break;
         default:
             jobj = ApiResponse.getUnknownErrorResponse();
         }
-
-        Logs.showTrace("********error*********nCount: " + nCount);
     }
 
     return jobj;

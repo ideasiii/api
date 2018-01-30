@@ -1,5 +1,17 @@
 <%! // DB operations shared among /routine/**/*.jsp pages
 
+public static class RoutineData {
+    public int routine_id;
+    public String device_id;
+    public String routine_type;
+    public String title;
+    public String start_time;
+    public int repeat;
+    public int meta_id;
+    public String create_time;
+    public String update_time;
+}
+
 //取得生活作息設定，需指定 device ID 、指定類型。不須指定時間點
 public int queryRoutineList(final String strDeviceId, final String strType, final ArrayList<RoutineData> listRoutine) {    
     SelectResult sr = new SelectResult();
@@ -28,11 +40,11 @@ public int queryRoutineList(final String strDeviceId, final String strType, fina
 }
 
 // 查詢指定 device ID 、指定時間點、指定類型的 routine ，確認是否已存在於 DB
-public int checkRoutineExistance(final String strDeviceId, final String strType, 
-        final String strTime) {   
+public int checkRoutineExistance(final Connection conn, final String strDeviceId, final String strType, 
+        final String strTime) {
     SelectResult sr = new SelectResult();
     
-    select(null, "SELECT NULL FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
+    select(conn, "SELECT NULL FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
             new Object[]{strDeviceId, strType, strTime}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -47,10 +59,10 @@ public int checkRoutineExistance(final String strDeviceId, final String strType,
     return sr.status;
 }
 
-public int queryRoutineID(final String strDeviceId, final String strType, final String strTime) {
+public int queryRoutineID(final Connection conn, final String strDeviceId, final String strType, final String strTime) {
     SelectResult sr = new SelectResult();
     
-    select(null, "SELECT routine_id FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
+    select(conn, "SELECT routine_id FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
             new Object[]{strDeviceId, strType, strTime}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {

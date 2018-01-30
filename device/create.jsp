@@ -20,15 +20,13 @@ private JSONObject processRequest(HttpServletRequest request) {
     final String strDeviceOs = request.getParameter("device_os");
 
     if (!isValidDeviceId(strDeviceId)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
     } else if (!isNotEmptyString(strDeviceOs)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_os.");
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_os.");
     }
 
-    Logs.showTrace("********" + strDeviceId + " os: " + strDeviceOs);
     JSONObject jobj;
-
-    int nInsert = insertDevice(strDeviceId, strDeviceOs);
+    int nInsert = insertDevice(null, strDeviceId, strDeviceOs);
 
     if (0 < nInsert) {
         jobj = ApiResponse.getSuccessResponseTemplate();
@@ -36,9 +34,6 @@ private JSONObject processRequest(HttpServletRequest request) {
         switch (nInsert) {
         case ERR_EXCEPTION:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-            break;
-        case ERR_INVALID_PARAMETER:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
             break;
         case ERR_CONFLICT:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_CONFLICTS_WITH_EXISTING_DATA,
@@ -52,16 +47,13 @@ private JSONObject processRequest(HttpServletRequest request) {
     return jobj;
 }
 
-private int insertDevice(final String strDeviceId, final String strDeviceOs) {
-	DeviceData deviData = new DeviceData();
-	int nCount = queryDevice(strDeviceId, deviData);
-
-    int nCount = checkDeviceIdExistance(strDeviceId);
+private int insertDevice(Connection conn, final String strDeviceId, final String strDeviceOs) {
+    int nCount = checkDeviceIdExistance(conn, strDeviceId);
     if (nCount != 0) {
-    	return (nCount > 0) ? ERR_CONFLICT : nCount; 
+    	return (nCount > 0) ? ERR_CONFLICT : nCount;
     }
 
-	return insertUpdateDelete(
+	return insertUpdateDelete(conn,
 	        "INSERT INTO device_list(device_id, device_os) VALUES (?,?)",
 	        new Object[]{strDeviceId, strDeviceOs});
 }

@@ -15,19 +15,18 @@ private JSONObject processListRoutineRequest(HttpServletRequest request, final S
     final String strDeviceId = request.getParameter("device_id");
 
     if (!isValidDeviceId(strDeviceId)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
     }
 
     ArrayList<RoutineData> listRoutine = new ArrayList<RoutineData>();
     JSONObject jobj;
 
-    int nCount = checkDeviceIdExistance(strDeviceId);
-    
+    int nCount = checkDeviceIdExistance(null, strDeviceId);
+
     if (nCount < 1) {
         switch (nCount) {
         case 0:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND,
-                "device_id not found.");
+            jobj = ApiResponse.deviceIdNotFoundResponse();
             break;
         case ERR_EXCEPTION:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
@@ -47,7 +46,7 @@ private JSONObject processListRoutineRequest(HttpServletRequest request, final S
             RoutineData rd = listRoutine.get(i);
             JSONObject rdJson = new JSONObject();
 
-            // 同樣是 RoutineData，不同的 API 要給予的回應可能會有出入。
+            // 同樣是 RoutineData，不同的 API 會從從裡面抽取不同的內容。
             // 實作 mapRoutineDataToObjectInResultArray(RoutineData, JSONObject)
             // 以控制要把 RoutineData 內的那些資料傳回給 client
             mapRoutineDataToObjectInResultArray(rd, rdJson);
@@ -62,14 +61,9 @@ private JSONObject processListRoutineRequest(HttpServletRequest request, final S
         case ERR_EXCEPTION:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
             break;
-        case ERR_INVALID_PARAMETER:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
-            break;
         default:
             jobj = ApiResponse.getUnknownErrorResponse();
         }
-
-        Logs.showTrace("********error*********nCount: " + nCount);
     }
 
     return jobj;

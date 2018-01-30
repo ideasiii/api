@@ -1,10 +1,10 @@
 <%@ include file="../api_common.jsp"%>
 <%@ include file="../response_generator.jsp"%>
-<%@ include file="setting_db_operations.jsp"%>
+<%@ include file="setting__common.jsp"%>
 
 <%@ page import="org.json.JSONObject"%>
 
-<%! // methods shared among /setting/___.jsp pages
+<%! // methods shared among /setting/*.jsp pages
 
 public JSONObject processPutSettingRequest(HttpServletRequest request, String strType) {
 	if (!request.getParameterMap().containsKey("device_id")
@@ -16,14 +16,16 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
 	final String strAction = request.getParameter("action");
 
     if (!isValidDeviceId(strDeviceId)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
     } else if (!isInteger(strAction)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid action.");
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid action.");
     }
 
     int nAction = Integer.parseInt(strAction.trim());
+
+    // actionIsInRange() is defined in each JSPs which included this file
     if (!actionIsInRange(nAction)) {
-    	return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid action.");
+    	return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid action.");
     }
 
     DeviceData deviData = new DeviceData();
@@ -51,9 +53,6 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
             case ERR_EXCEPTION:
                 jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
                 break;
-            case ERR_INVALID_PARAMETER:
-                jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE);
-                break;
             default:
                 jobj = ApiResponse.getUnknownErrorResponse();
             }
@@ -62,13 +61,10 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
         // Device not found
         switch (nCountDevice) {
         case 0:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND, "device_id not found.");
+            jobj = ApiResponse.deviceIdNotFoundResponse();
             break;
         case ERR_EXCEPTION:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-            break;
-        case ERR_INVALID_PARAMETER:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
             break;
         default:
             jobj = ApiResponse.getUnknownErrorResponse();

@@ -14,7 +14,7 @@ private JSONObject processRequest(HttpServletRequest request) {
     final String strDeviceId = request.getParameter("device_id");
 
     if (!isValidDeviceId(strDeviceId)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_VALUE, "Invalid device_id.");
+        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
     }
 
     DeviceData deviData = new DeviceData();
@@ -24,12 +24,10 @@ private JSONObject processRequest(HttpServletRequest request) {
     if (0 < nCount) {
         jobj = ApiResponse.getSuccessResponseTemplate();
         jobj.put("device_os", deviData.device_os);
-        Logs.showTrace("**********************nCount: " + nCount);
     } else {
         switch (nCount) {
         case 0:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_DATA_NOT_FOUND,
-                "device_id not found.");
+            jobj = ApiResponse.deviceIdNotFoundResponse();
             break;
         case ERR_EXCEPTION:
             jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
@@ -37,8 +35,6 @@ private JSONObject processRequest(HttpServletRequest request) {
         default:
             jobj = ApiResponse.getUnknownErrorResponse();
         }
-
-        Logs.showTrace("********error*********nCount: " + nCount);
     }
 
     return jobj;
