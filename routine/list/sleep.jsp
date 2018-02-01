@@ -1,9 +1,7 @@
 <%@ include file="routine-list_common.jsp" %>
 
-<%@ page import="org.json.JSONObject"%>
-
 <%
-    JSONObject jobj = processListRoutineRequest(request, "sleep");
+    JSONObject jobj = processListRoutineRequest(request, ROUTINE_TYPE_SLEEP);
     out.print(jobj.toString());
 %>
 

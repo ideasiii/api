@@ -9,28 +9,28 @@
 public JSONObject processPutSettingRequest(HttpServletRequest request, String strType) {
 	if (!request.getParameterMap().containsKey("device_id")
 			|| !request.getParameterMap().containsKey("action")) {
-		return ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM);
+		return ApiResponse.error(ApiResponse.STATUS_MISSING_PARAM);
     }
 
 	final String strDeviceId = request.getParameter("device_id");
 	final String strAction = request.getParameter("action");
 
     if (!isValidDeviceId(strDeviceId)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
+        return ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
     } else if (!isInteger(strAction)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid action.");
+        return ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid action.");
     }
 
     int nAction = Integer.parseInt(strAction.trim());
 
     // actionIsInRange() is defined in each JSPs which included this file
     if (!actionIsInRange(nAction)) {
-    	return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid action.");
+    	return ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid action.");
     }
 
     Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
     if (conn == null) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+        return ApiResponse.error(ApiResponse.STATUS_INTERNAL_ERROR);
     }
 
 
@@ -54,15 +54,9 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
     }
 
     if (0 < nRet) {
-        jobj = ApiResponse.getSuccessResponseTemplate();
+        jobj = ApiResponse.successTemplate();
     } else {
-        switch (nRet) {
-        case ERR_EXCEPTION:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-            break;
-        default:
-            jobj = ApiResponse.getUnknownErrorResponse();
-        }
+        jobj = ApiResponse.byReturnStatus(nRet);
     }
 
     closeConn(conn);

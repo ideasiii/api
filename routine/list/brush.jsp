@@ -1,7 +1,7 @@
 <%@ include file="routine-list_common.jsp" %>
 
 <%
-	JSONObject jobj = processListRoutineRequest(request, "brush teeth");
+	JSONObject jobj = processListRoutineRequest(request, ROUTINE_TYPE_BRUSH_TEETH);
 	out.print(jobj.toString());
 %>
 

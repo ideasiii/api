@@ -13,39 +13,36 @@
 private JSONObject processRequest(HttpServletRequest request) {
     if (!request.getParameterMap().containsKey("device_id")
             || !request.getParameterMap().containsKey("device_os")) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM);
+        return ApiResponse.error(ApiResponse.STATUS_MISSING_PARAM);
     }
 
     final String strDeviceId = request.getParameter("device_id");
     final String strDeviceOs = request.getParameter("device_os");
 
     if (!isValidDeviceId(strDeviceId)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
+        return ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
     } else if (!isNotEmptyString(strDeviceOs)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_os.");
+        return ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_os.");
     }
 
     final Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
     if (conn == null) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+        return ApiResponse.error(ApiResponse.STATUS_INTERNAL_ERROR);
     }
 
     JSONObject jobj;
     int nInsert = insertDevice(conn, strDeviceId, strDeviceOs);
 
     if (0 < nInsert) {
-        jobj = ApiResponse.getSuccessResponseTemplate();
+        jobj = ApiResponse.successTemplate();
     } else {
         switch (nInsert) {
-        case ERR_EXCEPTION:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-            break;
         case ERR_CONFLICT:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_CONFLICTS_WITH_EXISTING_DATA,
+            jobj = ApiResponse.error(ApiResponse.STATUS_CONFLICTS_WITH_EXISTING_DATA,
                     "device_id conflict.");
             break;
         default:
-            jobj = ApiResponse.getUnknownErrorResponse();
+            jobj = ApiResponse.byReturnStatus(nCount);
         }
     }
 

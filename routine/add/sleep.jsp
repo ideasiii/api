@@ -7,8 +7,6 @@
 %>
 
 <%!
-private static final String ROUTINE_TYPE = "sleep";
-
 public boolean hasRequiredParameters(final HttpServletRequest request) {
     Map paramMap = request.getParameterMap();
 	return paramMap.containsKey("device_id") && paramMap.containsKey("title") 
@@ -17,7 +15,7 @@ public boolean hasRequiredParameters(final HttpServletRequest request) {
 }
 
 public boolean copyRequestParameterToRoutineData(HttpServletRequest request, RoutineData rd) {
-	rd.routine_type = ROUTINE_TYPE;
+	rd.routine_type = ROUTINE_TYPE_SLEEP;
 	rd.device_id = request.getParameter("device_id");
 	rd.title = request.getParameter("title");
 	rd.start_time = request.getParameter("start_time");

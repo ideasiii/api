@@ -1,5 +1,8 @@
 <%! // DB operations shared among /routine/**/*.jsp pages
 
+private static final String ROUTINE_TYPE_BRUSH_TEETH = "brush teeth";
+private static final String ROUTINE_TYPE_SLEEP = "sleep";
+
 public static class RoutineData {
     public int routine_id;
     public String device_id;
@@ -77,6 +80,44 @@ public int checkRoutineExistance(final Connection conn, final String strDeviceId
     return sr.status;
 }
 
+//查詢指定 routine ID 是否為 device ID 所擁有
+public int checkHasRoutineIdOwnership(final Connection conn, final String strDeviceId, final int strRoutineId) {
+	SelectResult sr = new SelectResult();
+
+	select(conn, "SELECT NULL FROM routine_setting WHERE device_id=? AND routine_id=?",
+	        new Object[]{strDeviceId, strRoutineId}, new ResultSetReader() {
+	    @Override
+	    public void read(ResultSet rs, SelectResult sr) throws Exception {
+	        sr.status = 0;
+
+	        while (rs.next()) {
+	            ++sr.status;
+	        }
+	    }
+	}, sr);
+
+	return sr.status;
+}
+
+// 確認 routine_id 的 routine_type 是否符合預期
+public int checkRoutineTypeMatches(final Connection conn, final int strRoutineId, final String strRoutineType) {
+    SelectResult sr = new SelectResult();
+
+    select(conn, "SELECT NULL FROM routine_setting WHERE routine_id=? AND routine_type=??",
+            new Object[]{strDeviceId, strRoutineId}, new ResultSetReader() {
+        @Override
+        public void read(ResultSet rs, SelectResult sr) throws Exception {
+            sr.status = 0;
+
+            while (rs.next()) {
+                ++sr.status;
+            }
+        }
+    }, sr);
+
+    return sr.status;
+}
+
 public int queryRoutineID(final Connection conn, final String strDeviceId, final String strType, final String strTime) {
     SelectResult sr = new SelectResult();
 
@@ -91,6 +132,14 @@ public int queryRoutineID(final Connection conn, final String strDeviceId, final
     }, sr);
 
     return sr.status;
+}
+
+private boolean isValidRoutineRepeatValue(String r) {
+    if (r == null || r.length() < 1) {
+        return false;
+    }
+
+    return r.equals("0") || r.equals("1");
 }
 
 %>
