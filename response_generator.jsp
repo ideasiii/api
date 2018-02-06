@@ -84,6 +84,14 @@ public static class ApiResponse {
         return ret;
     }
 
+    public static JSONObject routineIdNotFound() {
+        JSONObject ret = new JSONObject();
+        ret.put("success", false);
+        ret.put("error", STATUS_DATA_NOT_FOUND);
+        ret.put("message", "routine_id not found.");
+        return ret;
+    }
+   
 	/**
 	 * 將其他 method 的返回值轉為可回傳給 client 的 response
 	 * 只能處理最通用的 status code，特殊狀況的 status 應該先處理掉。

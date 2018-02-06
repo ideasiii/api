@@ -37,7 +37,7 @@ public static class StoryData {
 public int queryRoutineList(final String strDeviceId, final String strType, final ArrayList<RoutineData> listRoutine) {
     SelectResult sr = new SelectResult();
 
-    select(null, "SELECT * FROM routine_setting WHERE device_id=? AND routine_type=?",
+    return select(null, "SELECT * FROM routine_setting WHERE device_id=? AND routine_type=?",
             new Object[]{strDeviceId, strType}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -56,8 +56,6 @@ public int queryRoutineList(final String strDeviceId, final String strType, fina
             }
         }
     }, sr);
-
-    return sr.status;
 }
 
 // 查詢指定 device ID 、指定時間點、指定類型的 routine ，確認是否已存在於 DB
@@ -65,7 +63,7 @@ public int checkRoutineExistance(final Connection conn, final String strDeviceId
         final String strTime) {
     SelectResult sr = new SelectResult();
 
-    select(conn, "SELECT NULL FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
+    return select(conn, "SELECT NULL FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
             new Object[]{strDeviceId, strType, strTime}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -76,15 +74,13 @@ public int checkRoutineExistance(final Connection conn, final String strDeviceId
             }
         }
     }, sr);
-
-    return sr.status;
 }
 
 //查詢指定 routine ID 是否為 device ID 所擁有
 public int checkHasRoutineIdOwnership(final Connection conn, final String strDeviceId, final int strRoutineId) {
 	SelectResult sr = new SelectResult();
 
-	select(conn, "SELECT NULL FROM routine_setting WHERE device_id=? AND routine_id=?",
+	return select(conn, "SELECT NULL FROM routine_setting WHERE device_id=? AND routine_id=?",
 	        new Object[]{strDeviceId, strRoutineId}, new ResultSetReader() {
 	    @Override
 	    public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -95,15 +91,13 @@ public int checkHasRoutineIdOwnership(final Connection conn, final String strDev
 	        }
 	    }
 	}, sr);
-
-	return sr.status;
 }
 
 // 確認 routine_id 的 routine_type 是否符合預期
 public int checkRoutineTypeMatches(final Connection conn, final int strRoutineId, final String strRoutineType) {
     SelectResult sr = new SelectResult();
 
-    select(conn, "SELECT NULL FROM routine_setting WHERE routine_id=? AND routine_type=??",
+    return select(conn, "SELECT NULL FROM routine_setting WHERE routine_id=? AND routine_type=??",
             new Object[]{strDeviceId, strRoutineId}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -114,14 +108,12 @@ public int checkRoutineTypeMatches(final Connection conn, final int strRoutineId
             }
         }
     }, sr);
-
-    return sr.status;
 }
 
 public int queryRoutineID(final Connection conn, final String strDeviceId, final String strType, final String strTime) {
     SelectResult sr = new SelectResult();
 
-    select(conn, "SELECT routine_id FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
+    return select(conn, "SELECT routine_id FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
             new Object[]{strDeviceId, strType, strTime}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -130,8 +122,6 @@ public int queryRoutineID(final Connection conn, final String strDeviceId, final
             }
         }
     }, sr);
-
-    return sr.status;
 }
 
 private boolean isValidRoutineRepeatValue(String r) {

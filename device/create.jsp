@@ -16,8 +16,8 @@ private JSONObject processRequest(HttpServletRequest request) {
         return ApiResponse.error(ApiResponse.STATUS_MISSING_PARAM);
     }
 
-    final String strDeviceId = request.getParameter("device_id");
-    final String strDeviceOs = request.getParameter("device_os");
+    final String strDeviceId = request.getParameter("device_id").trim();
+    final String strDeviceOs = request.getParameter("device_os").trim();
 
     if (!isValidDeviceId(strDeviceId)) {
         return ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");

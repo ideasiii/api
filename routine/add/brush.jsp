@@ -15,16 +15,16 @@ public boolean hasRequiredParameters(final HttpServletRequest request) {
 
 public boolean copyRequestParameterToRoutineData(HttpServletRequest request, RoutineData rd) {
 	rd.routine_type = ROUTINE_TYPE_BRUSH_TEETH;
-	rd.device_id = request.getParameter("device_id");
-	rd.title = request.getParameter("title");
-	rd.start_time = request.getParameter("start_time");
-	final String strRepeat = request.getParameter("repeat");
+	rd.device_id = request.getParameter("device_id").trim();
+	rd.title = request.getParameter("title").trim();
+	rd.start_time = request.getParameter("start_time").trim();
+	final String strRepeat = request.getParameter("repeat").trim();
     
     if (!isValidRoutineRepeatValue(strRepeat)) {
         return false;
     }
     
-    rd.repeat = Integer.parseInt(strRepeat.trim());
+    rd.repeat = Integer.parseInt(strRepeat);
     rd.meta_id = 0; // no meta_id in brush teeth    
 
     return isValidDeviceId(rd.device_id) && hasValidTimeFormat(rd.start_time)

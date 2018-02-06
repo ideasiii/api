@@ -5,14 +5,16 @@
 <%@ page import="org.json.JSONObject" %>
 <%@ page import="org.json.JSONArray" %>
 
-<%! // methods shared among /routine/list/___.jsp pages
+<%!
+// methods shared among /routine/list/{brush, sleep}.jsp pages
+// repeat-date.jsp is so special that almost nothing can be reused   
 
 private JSONObject processListRoutineRequest(HttpServletRequest request, final String strType) {
     if (!request.getParameterMap().containsKey("device_id")) {
         return ApiResponse.error(ApiResponse.STATUS_MISSING_PARAM);
     }
 
-    final String strDeviceId = request.getParameter("device_id");
+    final String strDeviceId = request.getParameter("device_id").trim();
 
     if (!isValidDeviceId(strDeviceId)) {
         return ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");

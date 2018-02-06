@@ -72,7 +72,7 @@
 	public int checkDeviceIdExistance(Connection conn, final String strDeviceId) {
 		SelectResult sr = new SelectResult();
 
-        select(conn, "SELECT NULL FROM device_list WHERE device_id=?",
+		return select(conn, "SELECT NULL FROM device_list WHERE device_id=?",
                 new Object[]{strDeviceId}, new ResultSetReader() {
             @Override
             public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -83,8 +83,6 @@
                 }
             }
         }, sr);
-
-        return sr.status;
 	}
 
     /****    Helpers    ****/

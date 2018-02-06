@@ -45,7 +45,7 @@ private JSONObject processRequest(HttpServletRequest request) {
 public int queryDevice(final String strDeviceId, final DeviceData deviData) {
     SelectResult sr = new SelectResult();
 
-    select(null, "SELECT * FROM device_list WHERE device_id=?",
+    return select(null, "SELECT * FROM device_list WHERE device_id=?",
             new Object[]{strDeviceId}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -60,8 +60,6 @@ public int queryDevice(final String strDeviceId, final DeviceData deviData) {
             }
         }
     }, sr);
-
-    return sr.status;
 }
 
 %>

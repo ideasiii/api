@@ -15,7 +15,7 @@ public static class DeviceSettingData {
 public int querySetting(final Connection conn, final String strDeviceId, final String strType, final DeviceSettingData deviSetData) {
     SelectResult sr = new SelectResult();
 
-    select(conn, "SELECT * FROM device_setting WHERE device_id=? AND setting_type=?",
+    return select(conn, "SELECT * FROM device_setting WHERE device_id=? AND setting_type=?",
             new Object[]{strDeviceId, strType}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -32,7 +32,5 @@ public int querySetting(final Connection conn, final String strDeviceId, final S
             }
         }
     }, sr);
-
-    return sr.status;
 }
 %>

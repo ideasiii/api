@@ -5,6 +5,9 @@
 <%@ page import="org.json.JSONObject"%>
 
 <%!
+// methods shared among /routine/add/{brush, sleep}.jsp pages
+// repeat-date.jsp is so special that almost nothing can be reused   
+
 private JSONObject processAddRoutineRequest(HttpServletRequest request) {
     if (!hasRequiredParameters(request)) {
         return ApiResponse.error(ApiResponse.STATUS_MISSING_PARAM);
