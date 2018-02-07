@@ -98,7 +98,7 @@ public int checkRoutineTypeMatches(final Connection conn, final int strRoutineId
     SelectResult sr = new SelectResult();
 
     return select(conn, "SELECT NULL FROM routine_setting WHERE routine_id=? AND routine_type=??",
-            new Object[]{strDeviceId, strRoutineId}, new ResultSetReader() {
+            new Object[]{strRoutineId, strRoutineType}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
             sr.status = 0;
