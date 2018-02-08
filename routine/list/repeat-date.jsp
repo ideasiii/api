@@ -85,7 +85,7 @@ public boolean copyRequestParameterToRoutineData(HttpServletRequest request, Rou
 public int selectRepeatDays(final Connection conn, final RoutineData rd, final JSONArray out) {
     SelectResult sr = new SelectResult();
 
-    return select(conn, "SELECT `routine_seq`, `weekday` FROM `routine_repeat` WHERE `routine_id`=?",
+    return select(conn, "SELECT `routine_seq`, `weekday` FROM `routine_repeat` WHERE `routine_id`=? ORDER BY `weekday`",
             new Object[]{rd.routine_id}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {

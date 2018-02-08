@@ -33,7 +33,7 @@ public static class StoryData {
 public int queryRoutineList(final String strDeviceId, final String strType, final ArrayList<RoutineData> listRoutine) {
     SelectResult sr = new SelectResult();
 
-    return select(null, "SELECT * FROM `routine_setting` WHERE `device_id`=? AND `routine_type`=?",
+    return select(null, "SELECT * FROM `routine_setting` WHERE `device_id`=? AND `routine_type`=? ORDER BY `start_time`",
             new Object[]{strDeviceId, strType}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
