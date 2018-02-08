@@ -11,15 +11,13 @@ public static class RoutineData {
     public String start_time;
     public int repeat;
     public int meta_id;
-    public String create_time;
-    public String update_time;
 }
 
 public static class RepeatData {
-    public int routine_seq;
+    public String device_id;
     public int routine_id;
+    public int routine_seq;
     public int weekday;
-    public String create_time;
 }
 
 public static class StoryData {
@@ -29,8 +27,6 @@ public static class StoryData {
     public String category;
     public String language;
     public int type;
-    public String create_time;
-    public String update_time;
 }
 
 //取得生活作息設定，需指定 device ID 、指定類型。不須指定時間點
@@ -110,6 +106,24 @@ public int checkRoutineTypeMatches(final Connection conn, final int strRoutineId
     }, sr);
 }
 
+
+// 查詢指定的 routine 是否已經有設置在 weekday 重複，若有，傳回那個設定的 routine_seq，否則回傳 0
+public int queryRepeatRoutineSequence(final Connection conn, final int strRoutineId, final int weekday) {
+    SelectResult sr = new SelectResult();
+
+    return select(conn, "SELECT `routine_seq` FROM `routine_repeat` WHERE `routine_id`=? AND `weekday`=?",
+            new Object[]{strRoutineId, Integer.valueOf(weekday)}, new ResultSetReader() {
+        @Override
+        public void read(ResultSet rs, SelectResult sr) throws Exception {
+            sr.status = 0;
+
+            while (rs.next()) {
+                sr.status = rs.getInt("routine_seq");
+            }
+        }
+    }, sr);
+}
+
 public int queryRoutineID(final Connection conn, final String strDeviceId, final String strType, final String strTime) {
     SelectResult sr = new SelectResult();
 
@@ -132,4 +146,7 @@ private boolean isValidRoutineRepeatValue(String r) {
     return r.equals("0") || r.equals("1");
 }
 
+private boolean isValidWeekday(int w) {
+    return w >= 1 && w <= 7;
+}
 %>
