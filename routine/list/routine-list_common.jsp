@@ -5,23 +5,24 @@
 <%@ page import="org.json.JSONObject" %>
 <%@ page import="org.json.JSONArray" %>
 
-<%! // methods shared among /routine/list/___.jsp pages
+<%!
+// methods shared among /routine/list/{brush, sleep}.jsp pages
+// repeat-date.jsp is so special that almost nothing can be reused   
 
 private JSONObject processListRoutineRequest(HttpServletRequest request, final String strType) {
     if (!request.getParameterMap().containsKey("device_id")) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM);
+        return ApiResponse.error(ApiResponse.STATUS_MISSING_PARAM);
     }
 
-    final String strDeviceId = request.getParameter("device_id");
+    final String strDeviceId = request.getParameter("device_id").trim();
 
     if (!isValidDeviceId(strDeviceId)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
+        return ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid device_id.");
     }
-
 
     final Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
     if (conn == null) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+        return ApiResponse.error(ApiResponse.STATUS_INTERNAL_ERROR);
     }
 
     JSONObject jobj = tryIfDeviceNotExistInList(conn, strDeviceId);
@@ -29,7 +30,7 @@ private JSONObject processListRoutineRequest(HttpServletRequest request, final S
     	closeConn(conn);
     	return jobj;
     }
-    
+
     ArrayList<RoutineData> listRoutine = new ArrayList<RoutineData>();
     int nCount = queryRoutineList(strDeviceId, strType, listRoutine);
 
@@ -47,16 +48,10 @@ private JSONObject processListRoutineRequest(HttpServletRequest request, final S
             jsonArray.put(rdJson);
         }
 
-        jobj = ApiResponse.getSuccessResponseTemplate();
+        jobj = ApiResponse.successTemplate();
         jobj.put("result", jsonArray);
     } else {
-        switch (nCount) {
-        case ERR_EXCEPTION:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-            break;
-        default:
-            jobj = ApiResponse.getUnknownErrorResponse();
-        }
+        jobj = ApiResponse.byReturnStatus(nCount);
     }
 
     closeConn(conn);

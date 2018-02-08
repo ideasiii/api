@@ -11,18 +11,18 @@
 <%!
 private JSONObject processRequest(HttpServletRequest request) {
 	if (!request.getParameterMap().containsKey("device_id")) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_MISSING_PARAM);
+        return ApiResponse.error(ApiResponse.STATUS_MISSING_PARAM);
     }
 
-    final String strDeviceId = request.getParameter("device_id");
+    final String strDeviceId = request.getParameter("device_id").trim();
 
     if (!isValidDeviceId(strDeviceId)) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INVALID_PARAMETER);
+        return ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER);
     }
-    
+
     final Connection conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
     if (conn == null) {
-        return ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+        return ApiResponse.error(ApiResponse.STATUS_INTERNAL_ERROR);
     }
 
     JSONObject jobj = tryIfDeviceNotExistInList(conn, strDeviceId);
@@ -32,19 +32,12 @@ private JSONObject processRequest(HttpServletRequest request) {
     }
 
     int nDelete = deleteSetting(conn, strDeviceId);
-    System.out.println("nDelete = " + nDelete);
     if (0 < nDelete) {
-        jobj = ApiResponse.getSuccessResponseTemplate();
+        jobj = ApiResponse.successTemplate();
     } else {
-        switch (nDelete) {
-        case ERR_EXCEPTION:
-            jobj = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
-            break;
-        default:
-            jobj = ApiResponse.getUnknownErrorResponse();
-        }
+        jobj = ApiResponse.byReturnStatus(nDelete);
     }
-    
+
     closeConn(conn);
     return jobj;
 }
@@ -54,12 +47,12 @@ public int deleteSetting(Connection conn, final String strDeviceId) {
 
     int ret = insertUpdateDelete(conn,
     	    "DELETE FROM `device_setting` WHERE `device_id`=?", vals);
-    
+
     if (ret == ERR_SUCCESS) {
         ret = insertUpdateDelete(conn,
                 "DELETE FROM `routine_setting` WHERE `device_id`=?", vals);
     }
-    
+
     return ret;
 }
 %>

@@ -89,11 +89,11 @@ public int insertUpdateDelete(Connection conn, final String template, final Obje
  * @return ERR_EXCEPTION if error occured, otherwise return user-defined value.
  *         Caller should be able to distinguish ERR_EXCEPTION and their own return values.
  */
-public SelectResult select(Connection conn, final String template,
+public int select(Connection conn, final String template,
         final Object[] params, final ResultSetReader reader, SelectResult ret) {
     PreparedStatement pst = null;
     boolean closeConnOnReturn = false;
-
+    
     try {
         if (conn == null) {
            conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
@@ -114,7 +114,7 @@ public SelectResult select(Connection conn, final String template,
                 pst.setString(paramIndex++, (String)param);
             } else {
                 throw new IllegalArgumentException(
-                        "unsupported type of parameter " + param.getClass().getName());
+                        "parameter with unsupported type " + param.getClass().getName());
             }
         }
 
@@ -131,7 +131,7 @@ public SelectResult select(Connection conn, final String template,
             closeConn(conn);
         }
 
-        return ret;
+        return ret.status;
     }
 }
 %>

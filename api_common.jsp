@@ -1,7 +1,7 @@
 <%@ page trimDirectiveWhitespaces="true"%>
 <%@ page contentType="application/json; charset=utf-8" language="java"
 	session="false"%>
-	
+
 <%@ page import="java.sql.*"%>
 <%@ page import="java.util.ArrayList"%>
 <%@ page import="java.util.Arrays"%>
@@ -50,24 +50,21 @@
 	 */
 	public JSONObject tryIfDeviceNotExistInList(Connection conn, final String strDeviceId) {
 		JSONObject ret = null;
-		
+
 		int nCount = checkDeviceIdExistance(null, strDeviceId);
 	    if (nCount < 1) {
 	        switch (nCount) {
 	        case 0:
-	        	ret = ApiResponse.deviceIdNotFoundResponse();
-	            break;
-	        case ERR_EXCEPTION:
-	        	ret = ApiResponse.getErrorResponse(ApiResponse.STATUS_INTERNAL_ERROR);
+	        	ret = ApiResponse.deviceIdNotFound();
 	            break;
 	        default:
-	        	ret = ApiResponse.getUnknownErrorResponse();
-	        }	        
+				ret = ApiResponse.byReturnStatus(nCount);
+	        }
 	    }
-	    
+
 	    return ret;
 	}
-	
+
 	/**
 	 * 有時候我們只想知道 device ID 有沒有在 DB 內，但不想要詳細資訊
 	 * @return 若發生錯誤，傳回 ERR_EXCEPTION，否則傳回一個大於等於零的值，代表取得的資料筆數
@@ -75,7 +72,7 @@
 	public int checkDeviceIdExistance(Connection conn, final String strDeviceId) {
 		SelectResult sr = new SelectResult();
 
-        select(conn, "SELECT NULL FROM device_list WHERE device_id=?",
+		return select(conn, "SELECT NULL FROM device_list WHERE device_id=?",
                 new Object[]{strDeviceId}, new ResultSetReader() {
             @Override
             public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -86,10 +83,8 @@
                 }
             }
         }, sr);
-
-        return sr.status;
 	}
-	
+
     /****    Helpers    ****/
 
     public static boolean hasValidTimeFormat(String str) {
