@@ -54,7 +54,7 @@ public int queryRoutineList(final String strDeviceId, final String strType, fina
     }, sr);
 }
 
-// 查詢指定 device ID 、指定時間點、指定類型的 routine ，確認是否已存在於 DB
+// 查詢指定 device ID 、指定時間點、指定類型的 routine，確認是否已存在於 DB
 public int checkRoutineExistance(final Connection conn, final String strDeviceId, final String strType,
         final String strTime) {
     SelectResult sr = new SelectResult();
@@ -106,13 +106,29 @@ public int checkRoutineTypeMatches(final Connection conn, final int strRoutineId
     }, sr);
 }
 
+//查詢指定 routine seq 是否為 device ID 所擁有
+public int checkHasRoutineSeqOwnership(final Connection conn, final String strDeviceId, final int routineSeq) {
+	SelectResult sr = new SelectResult();
+	return select(conn, "SELECT NULL FROM `routine_setting` as rs, `routine_repeat` AS rr "
+                    + "WHERE rs.`routine_id`=rr.`routine_id` AND rs.`device_id`=? AND rr.`routine_seq`=?",
+	        new Object[]{strDeviceId, Integer.valueOf(routineSeq)}, new ResultSetReader() {
+	    @Override
+	    public void read(ResultSet rs, SelectResult sr) throws Exception {
+	        sr.status = 0;
+
+	        while (rs.next()) {
+	            ++sr.status;
+	        }
+	    }
+	}, sr);
+}
 
 // 查詢指定的 routine 是否已經有設置在 weekday 重複，若有，傳回那個設定的 routine_seq，否則回傳 0
-public int queryRepeatRoutineSequence(final Connection conn, final int strRoutineId, final int weekday) {
+public int queryRepeatRoutineSequence(final Connection conn, final int routineId, final int weekday) {
     SelectResult sr = new SelectResult();
 
     return select(conn, "SELECT `routine_seq` FROM `routine_repeat` WHERE `routine_id`=? AND `weekday`=?",
-            new Object[]{strRoutineId, Integer.valueOf(weekday)}, new ResultSetReader() {
+            new Object[]{Integer.valueOf(routineId), Integer.valueOf(weekday)}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
             sr.status = 0;
