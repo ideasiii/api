@@ -93,7 +93,7 @@ public int select(Connection conn, final String template,
         final Object[] params, final ResultSetReader reader, SelectResult ret) {
     PreparedStatement pst = null;
     boolean closeConnOnReturn = false;
-    
+
     try {
         if (conn == null) {
            conn = connect(Common.DB_URL, Common.DB_USER, Common.DB_PASS);
@@ -105,12 +105,11 @@ public int select(Connection conn, final String template,
 
         for (int i = 0; i < params.length; i++) {
             Object param = params[i];
-
-            if (params[i] instanceof Integer) {
+            if (param instanceof Integer) {
                 pst.setInt(paramIndex++, ((Integer)param).intValue());
-            } else if (params[i] instanceof Long) {
+            } else if (param instanceof Long) {
                 pst.setLong(paramIndex++, ((Long)param).longValue());
-            } else if (params[i] instanceof String) {
+            } else if (param instanceof String) {
                 pst.setString(paramIndex++, (String)param);
             } else {
                 throw new IllegalArgumentException(

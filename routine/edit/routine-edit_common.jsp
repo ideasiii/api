@@ -22,6 +22,8 @@ private JSONObject processEditRoutineRequest(HttpServletRequest request) {
         return ApiResponse.error(ApiResponse.STATUS_INTERNAL_ERROR);
     }
 
+    JSONObject jobj;
+
     int nCount = checkHasRoutineIdOwnership(conn, rd.device_id, rd.routine_id);
     if (nCount < 1) {
         switch (nCount) {
@@ -29,6 +31,7 @@ private JSONObject processEditRoutineRequest(HttpServletRequest request) {
         	// routine does not exist, or routine ID is owned by other device
             jobj = ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER,
                     "invalid routine_id.");
+            break;
         default:
             jobj = ApiResponse.byReturnStatus(nCount);
         }
@@ -44,6 +47,7 @@ private JSONObject processEditRoutineRequest(HttpServletRequest request) {
             // routine does not exist, or routine ID is owned by others
             jobj = ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER,
                     "routine type mismatch.");
+            break;
         default:
             jobj = ApiResponse.byReturnStatus(nCount);
         }
@@ -53,7 +57,7 @@ private JSONObject processEditRoutineRequest(HttpServletRequest request) {
     }
 
     // Device exists, search for possibly conflicting start_time
-    nCount = checkRoutineExistance(conn, rd.device_id, rd.routine_type, rd.start_time);
+    nCount = checkRoutineStartTimeWillConflictWithOthers(conn, rd.device_id, rd.routine_id, rd.start_time);
     if (nCount != 0) {
         if (nCount > 0) {
             jobj = ApiResponse.error(ApiResponse.STATUS_CONFLICTS_WITH_EXISTING_DATA,
@@ -81,6 +85,25 @@ public int updateRoutineSetting(final Connection conn, final RoutineData rd) {
     return insertUpdateDelete(conn,
             "UPDATE `routine_setting` SET `title`=?, `start_time`=?, `repeat`=?, `meta_id`=? WHERE `routine_id`=?",
             new Object[]{rd.title, rd.start_time, rd.repeat, rd.meta_id, rd.routine_id});
+}
+
+// 檢查若將指定的 routine ID 的 start_time 設為 strTime 是否會與其他既有 routine 的 start_time 衝突
+// 與 strRoutineId 本身儲存在 DB 內的 start_time 相同並不算衝突
+public int checkRoutineStartTimeWillConflictWithOthers(final Connection conn, final String strDeviceId,
+        final int strRoutineId, final String strTime) {
+    SelectResult sr = new SelectResult();
+
+    return select(conn, "SELECT NULL FROM `routine_setting` WHERE `device_id`=? AND `routine_id`!=? AND `start_time`=?",
+            new Object[]{strDeviceId, Integer.valueOf(strRoutineId), strTime}, new ResultSetReader() {
+        @Override
+        public void read(ResultSet rs, SelectResult sr) throws Exception {
+            sr.status = 0;
+
+            while (rs.next()) {
+                ++sr.status;
+            }
+        }
+    }, sr);
 }
 
 %>
