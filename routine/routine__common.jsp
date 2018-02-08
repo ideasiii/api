@@ -37,7 +37,7 @@ public static class StoryData {
 public int queryRoutineList(final String strDeviceId, final String strType, final ArrayList<RoutineData> listRoutine) {
     SelectResult sr = new SelectResult();
 
-    return select(null, "SELECT * FROM routine_setting WHERE device_id=? AND routine_type=?",
+    return select(null, "SELECT * FROM `routine_setting` WHERE `device_id`=? AND `routine_type`=?",
             new Object[]{strDeviceId, strType}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -63,7 +63,7 @@ public int checkRoutineExistance(final Connection conn, final String strDeviceId
         final String strTime) {
     SelectResult sr = new SelectResult();
 
-    return select(conn, "SELECT NULL FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
+    return select(conn, "SELECT NULL FROM `routine_setting` WHERE `device_id`=? AND `routine_type`=? AND `start_time`=?",
             new Object[]{strDeviceId, strType, strTime}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -80,7 +80,7 @@ public int checkRoutineExistance(final Connection conn, final String strDeviceId
 public int checkHasRoutineIdOwnership(final Connection conn, final String strDeviceId, final int strRoutineId) {
 	SelectResult sr = new SelectResult();
 
-	return select(conn, "SELECT NULL FROM routine_setting WHERE device_id=? AND routine_id=?",
+	return select(conn, "SELECT NULL FROM `routine_setting` WHERE `device_id`=? AND `routine_id`=?",
 	        new Object[]{strDeviceId, strRoutineId}, new ResultSetReader() {
 	    @Override
 	    public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -97,7 +97,7 @@ public int checkHasRoutineIdOwnership(final Connection conn, final String strDev
 public int checkRoutineTypeMatches(final Connection conn, final int strRoutineId, final String strRoutineType) {
     SelectResult sr = new SelectResult();
 
-    return select(conn, "SELECT NULL FROM routine_setting WHERE routine_id=? AND routine_type=??",
+    return select(conn, "SELECT NULL FROM `routine_setting` WHERE `routine_id`=? AND `routine_type`=?",
             new Object[]{strRoutineId, strRoutineType}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -113,7 +113,7 @@ public int checkRoutineTypeMatches(final Connection conn, final int strRoutineId
 public int queryRoutineID(final Connection conn, final String strDeviceId, final String strType, final String strTime) {
     SelectResult sr = new SelectResult();
 
-    return select(conn, "SELECT routine_id FROM routine_setting WHERE device_id=? AND routine_type=? AND start_time=?",
+    return select(conn, "SELECT `routine_id` FROM `routine_setting` WHERE `device_id`=? AND `routine_type`=? AND `start_time`=?",
             new Object[]{strDeviceId, strType, strTime}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {

@@ -42,7 +42,7 @@ private JSONObject processRequest(HttpServletRequest request) {
                     "device_id conflict.");
             break;
         default:
-            jobj = ApiResponse.byReturnStatus(nCount);
+            jobj = ApiResponse.byReturnStatus(nInsert);
         }
     }
 

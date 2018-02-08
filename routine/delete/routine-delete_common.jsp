@@ -2,11 +2,12 @@
 <%@include file="../../response_generator.jsp"%>
 <%@include file="../routine__common.jsp"%>
 
+<%@ page import="java.util.Map" %>
 <%@ page import="org.json.JSONObject" %>
 
 <%!
 // methods shared among /routine/delete/{brush, sleep}.jsp pages
-// repeat-date.jsp is so special that almost nothing can be reused   
+// repeat-date.jsp is so special that almost nothing can be reused
 
 private JSONObject processDeleteRoutineRequest(HttpServletRequest request, final String strType) {
     if (!request.getParameterMap().containsKey("device_id")
@@ -24,6 +25,8 @@ private JSONObject processDeleteRoutineRequest(HttpServletRequest request, final
         return ApiResponse.error(ApiResponse.STATUS_INTERNAL_ERROR);
     }
 
+    JSONObject jobj;
+
     int nCount = checkHasRoutineIdOwnership(conn, rd.device_id, rd.routine_id);
     if (nCount < 1) {
         switch (nCount) {
@@ -31,6 +34,7 @@ private JSONObject processDeleteRoutineRequest(HttpServletRequest request, final
             // routine does not exist, or routine ID is owned by other device
             jobj = ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER,
                     "invalid routine_id.");
+            break;
         default:
             jobj = ApiResponse.byReturnStatus(nCount);
         }
@@ -38,7 +42,7 @@ private JSONObject processDeleteRoutineRequest(HttpServletRequest request, final
         closeConn(conn);
         return jobj;
     }
-    
+
     int nDelete = deleteRoutineSetting(conn, rd.device_id, rd.routine_id);
     if (0 < nDelete) {
         jobj = ApiResponse.successTemplate();
@@ -62,7 +66,7 @@ public boolean copyRequestParameterToRoutineData(HttpServletRequest request, Rou
     if (!isPositiveInteger(strRoutineId)) {
         return false;
     }
-    
+
     rd.routine_id = Integer.parseInt(strRoutineId);
     return isValidDeviceId(rd.device_id);
 }
