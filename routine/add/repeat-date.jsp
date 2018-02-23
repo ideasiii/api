@@ -95,9 +95,17 @@ public boolean hasRequiredParameters(final HttpServletRequest request) {
 }
 
 public boolean copyRequestParameter(HttpServletRequest request, RepeatData rd) {
-    rd.device_id = request.getParameter("device_id").trim();
-    final String strRoutineId = request.getParameter("routine_id").trim();
-    final String strWeekday = request.getParameter("weekday").trim();
+    rd.device_id = request.getParameter("device_id");
+    String strRoutineId = request.getParameter("routine_id");
+    String strWeekday = request.getParameter("weekday");
+
+    if (rd.device_id == null || strRoutineId == null || strWeekday == null) {
+        return false;
+    }
+
+    rd.device_id = rd.device_id.trim();
+    strRoutineId = strRoutineId.trim();
+    strWeekday = strWeekday.trim();
 
     if (!isPositiveInteger(strRoutineId) || !isPositiveInteger(strWeekday)) {
         return false;

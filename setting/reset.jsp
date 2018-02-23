@@ -15,8 +15,13 @@ private JSONObject processRequest(HttpServletRequest request) {
         return ApiResponse.error(ApiResponse.STATUS_MISSING_PARAM);
     }
 
-    final String strDeviceId = request.getParameter("device_id").trim();
+    String strDeviceId = request.getParameter("device_id");
 
+    if (strDeviceId == null) {
+        return ApiResponse.error(ApiResponse.STATUS_MISSING_PARAM);
+    }
+
+    strDeviceId = strDeviceId.trim();
     if (!isValidDeviceId(strDeviceId)) {
         return ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER);
     }

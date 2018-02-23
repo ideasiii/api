@@ -18,11 +18,22 @@ public boolean hasRequiredParameters(final HttpServletRequest request) {
 
 public boolean copyRequestParameterToRoutineData(HttpServletRequest request, RoutineData rd) {
 	rd.routine_type = ROUTINE_TYPE_SLEEP;
-	rd.device_id = request.getParameter("device_id").trim();
-	rd.title = request.getParameter("title").trim();
-	rd.start_time = request.getParameter("start_time").trim();
-    final String strRepeat = request.getParameter("repeat").trim();
-    final String strMetaId = request.getParameter("meta_id").trim();
+	rd.device_id = request.getParameter("device_id");
+	rd.title = request.getParameter("title");
+	rd.start_time = request.getParameter("start_time");
+    String strRepeat = request.getParameter("repeat");
+    String strMetaId = request.getParameter("meta_id");
+
+    if (rd.device_id == null || rd.title == null || rd.start_time == null ||
+        strRepeat == null || strMetaId == null) {
+        return false;
+    }
+
+	rd.device_id = rd.device_id.trim();
+	rd.title = rd.title.trim();
+	rd.start_time = rd.start_time.trim();
+    strRepeat = strRepeat.trim();
+    strMetaId = strMetaId.trim();
 
     if (!isValidRoutineRepeatValue(strRepeat) || !isPositiveInteger(strMetaId)) {
     	return false;

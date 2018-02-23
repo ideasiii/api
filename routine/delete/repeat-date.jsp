@@ -67,8 +67,15 @@ public boolean hasRequiredParameters(final HttpServletRequest request) {
 }
 
 public boolean copyRequestParameter(HttpServletRequest request, RepeatData rd) {
-    rd.device_id = request.getParameter("device_id").trim();
-    final String strRoutineSeq = request.getParameter("routine_seq").trim();
+    rd.device_id = request.getParameter("device_id");
+    String strRoutineSeq = request.getParameter("routine_seq");
+
+    if (rd.device_id == null || strRoutineSeq == null) {
+        return false;
+    }
+
+    rd.device_id = rd.device_id.trim();
+    strRoutineSeq = strRoutineSeq.trim();
 
     if (!isPositiveInteger(strRoutineSeq)) {
         return false;

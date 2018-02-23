@@ -12,7 +12,7 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
 		return ApiResponse.error(ApiResponse.STATUS_MISSING_PARAM);
     }
 
-	final String strDeviceId = request.getParameter("device_id");
+	String strDeviceId = request.getParameter("device_id");
 	final String strAction = request.getParameter("action");
 
     if (!isValidDeviceId(strDeviceId)) {
@@ -21,6 +21,7 @@ public JSONObject processPutSettingRequest(HttpServletRequest request, String st
         return ApiResponse.error(ApiResponse.STATUS_INVALID_PARAMETER, "Invalid action.");
     }
 
+    strDeviceId = strDeviceId.trim();
     int nAction = Integer.parseInt(strAction.trim());
 
     // actionIsInRange() is defined in each JSPs which included this file

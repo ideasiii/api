@@ -72,8 +72,15 @@ public boolean hasRequiredParameters(final HttpServletRequest request) {
 
 public boolean copyRequestParameterToRoutineData(HttpServletRequest request, RoutineData rd) {
     rd.routine_type = ROUTINE_TYPE_BRUSH_TEETH;
-    rd.device_id = request.getParameter("device_id").trim();
-    final String strRoutineId = request.getParameter("routine_id").trim();
+    rd.device_id = request.getParameter("device_id");
+    String strRoutineId = request.getParameter("routine_id");
+
+    if (rd.device_id == null || strRoutineId == null) {
+        return false;
+    }
+
+    rd.device_id = rd.device_id.trim();
+    strRoutineId = strRoutineId.trim();
 
     if (!isPositiveInteger(strRoutineId)) {
         return false;

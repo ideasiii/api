@@ -28,8 +28,10 @@ private JSONObject processListBedtimeStoryRequest(HttpServletRequest request) {
         return ApiResponse.error(ApiResponse.STATUS_INTERNAL_ERROR);
     }
 
+    JSONObject jobj = new JSONObject();
     JSONArray resArr = new JSONArray();
-    int nSelect = selectStories(conn, rd, resArr);
+
+    int nSelect = selectStories(conn, rp, resArr);
     if (nSelect < 0) {
         // SELECT failed
         jobj = ApiResponse.byReturnStatus(nSelect);
@@ -48,22 +50,28 @@ public boolean hasRequiredParameters(final HttpServletRequest request) {
 }
 
 public boolean extractRequestParameter(HttpServletRequest request, RequestParam rp) {
+    rp.language = request.getParameter("language");
+    String strType = request.getParameter("type");
+
+    if (rp.language == null || strType == null) {
+        return false;
+    }
+
     rp.language = request.getParameter("language").trim();
-    String strType = request.getParameter("typeroutine_id").trim();
+    strType = request.getParameter("type").trim();
 
     if (!isPositiveInteger(strType)) {
         return false;
     }
 
     rp.type = Integer.parseInt(strType);
-
     return isNotEmptyString(rp.language);
 }
 
 public int selectStories(final Connection conn, final RequestParam rp, final JSONArray out) {
     SelectResult sr = new SelectResult();
 
-    return select(conn, "SELECT `story_id`,`story_url`,`story_name`, FROM `story` WHERE `language`=? AND `type`=?",
+    return select(conn, "SELECT `story_id`,`story_url`,`story_name` FROM `story` WHERE `language`=? AND `type`=?",
             new Object[]{rp.language, Integer.valueOf(rp.type)}, new ResultSetReader() {
         @Override
         public void read(ResultSet rs, SelectResult sr) throws Exception {
@@ -72,7 +80,7 @@ public int selectStories(final Connection conn, final RequestParam rp, final JSO
             while (rs.next()) {
                 ++sr.status;
                 JSONObject story = new JSONObject();
-                story.put("story_id", rs.getInt("story_id"));
+                story.put("story_id", Integer.toString(rs.getInt("story_id")));
                 story.put("story_url", rs.getString("story_url"));
                 story.put("story_name", rs.getString("story_name"));
                 out.put(story);
