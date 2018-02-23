@@ -1,6 +1,8 @@
+<%@ page language="java" contentType="application/json; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
 <%@ include file="routine-list_common.jsp" %>
 
 <%
+    request.setCharacterEncoding("UTF-8");
     JSONObject jobj = processListRoutineRequest(request, ROUTINE_TYPE_SLEEP);
     out.print(jobj.toString());
 %>

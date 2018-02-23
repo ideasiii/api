@@ -1,7 +1,9 @@
+<%@ page language="java" contentType="application/json; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
 <%@include file="routine-add_common.jsp"%>
 <%@page import="java.util.Map"%>
 
 <%
+    request.setCharacterEncoding("UTF-8");
     JSONObject jobj = processAddRoutineRequest(request);
     out.print(jobj.toString());
 %>
@@ -19,13 +21,13 @@ public boolean copyRequestParameterToRoutineData(HttpServletRequest request, Rou
 	rd.title = request.getParameter("title").trim();
 	rd.start_time = request.getParameter("start_time").trim();
 	final String strRepeat = request.getParameter("repeat").trim();
-    
+
     if (!isValidRoutineRepeatValue(strRepeat)) {
         return false;
     }
-    
+
     rd.repeat = Integer.parseInt(strRepeat);
-    rd.meta_id = 0; // no meta_id in brush teeth    
+    rd.meta_id = 0; // no meta_id in brush teeth
 
     return isValidDeviceId(rd.device_id) && hasValidTimeFormat(rd.start_time)
             && isNotEmptyString(rd.title);

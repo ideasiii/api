@@ -4,6 +4,7 @@
 <%@ page import="org.json.JSONObject"%>
 
 <%
+    request.setCharacterEncoding("UTF-8");
     JSONObject jobj = processRequest(request);
     out.print(jobj.toString());
 %>

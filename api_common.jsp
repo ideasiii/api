@@ -1,6 +1,5 @@
 <%@ page trimDirectiveWhitespaces="true"%>
-<%@ page contentType="application/json; charset=utf-8" language="java"
-	session="false"%>
+<%@ page language="java" contentType="application/json; charset=UTF-8" pageEncoding="UTF-8" session="false"%>
 
 <%@ page import="java.sql.*"%>
 <%@ page import="java.util.ArrayList"%>

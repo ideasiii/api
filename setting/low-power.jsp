@@ -7,6 +7,7 @@ private boolean actionIsInRange(int action) {
 %>
 
 <%
+    request.setCharacterEncoding("UTF-8");
     JSONObject jobj = processPutSettingRequest(request, "battery");
     out.print(jobj.toString());
 %>
