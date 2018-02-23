@@ -20,15 +20,6 @@ public static class RepeatData {
     public int weekday;
 }
 
-public static class StoryData {
-    public int story_id; // this is meta_id in sleep routine data
-    public String story_url;
-    public String story_name;
-    public String category;
-    public String language;
-    public int type;
-}
-
 //取得生活作息設定，需指定 device ID 、指定類型。不須指定時間點
 public int queryRoutineList(final String strDeviceId, final String strType, final ArrayList<RoutineData> listRoutine) {
     SelectResult sr = new SelectResult();
